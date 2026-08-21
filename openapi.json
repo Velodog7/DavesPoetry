@@ -1,0 +1,1710 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dad's Verses API",
+    "version": "1.1.0",
+    "description": "Poems, the author's highlighted words, likes, comments, and literary analysis.\n\nReads are open. The poet's own actions need `Authorization: Bearer <AUTHOR_TOKEN>`.",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Service",
+      "description": "Health and collection-wide data"
+    },
+    {
+      "name": "Poems",
+      "description": "Create, read, update and delete poems"
+    },
+    {
+      "name": "Highlights",
+      "description": "The words the poet has chosen to mark"
+    },
+    {
+      "name": "Analysis",
+      "description": "Form detection and close reading"
+    },
+    {
+      "name": "Engagement",
+      "description": "Likes and comments from readers"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "authorToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The AUTHOR_TOKEN the server was started with."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "unauthorized"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Style": {
+        "type": "object",
+        "properties": {
+          "font": {
+            "type": "string",
+            "enum": [
+              "mincho",
+              "gothic"
+            ]
+          },
+          "size": {
+            "type": "number"
+          },
+          "leading": {
+            "type": "number"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "left",
+              "center"
+            ]
+          },
+          "accent": {
+            "type": "string",
+            "example": "#3B6FD4"
+          }
+        }
+      },
+      "KeyWord": {
+        "type": "object",
+        "properties": {
+          "word": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Poem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "seed3"
+          },
+          "title": {
+            "type": "string",
+            "example": "Ode to a Kitchen Table"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "type": "string",
+            "description": "The poem, with newlines preserved"
+          },
+          "form": {
+            "type": "string",
+            "example": "Ode",
+            "description": "Detected form"
+          },
+          "structure": {
+            "type": "string",
+            "example": "4 quatrains"
+          },
+          "formColor": {
+            "type": "string",
+            "example": "#E08A2E"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Zero-based word positions the poet has marked"
+          },
+          "highlightedWords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "likes": {
+            "type": "integer"
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
+          "keyWords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyWord"
+            }
+          },
+          "wordCount": {
+            "type": "integer"
+          },
+          "lineCount": {
+            "type": "integer"
+          },
+          "stanzaCount": {
+            "type": "integer"
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "sample": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PoemList": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "poems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Poem"
+            }
+          }
+        }
+      },
+      "PoemInput": {
+        "type": "object",
+        "required": [
+          "title",
+          "body"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "style": {
+            "$ref": "#/components/schemas/Style"
+          },
+          "highlights": {
+            "description": "Word positions, or words to mark everywhere",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "HighlightSet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "word": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "HighlightInput": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "words"
+            ],
+            "properties": {
+              "words": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "hold",
+                  "bless"
+                ]
+              }
+            },
+            "description": "Marks every occurrence of these words"
+          },
+          {
+            "type": "object",
+            "required": [
+              "indices"
+            ],
+            "properties": {
+              "indices": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  0,
+                  1,
+                  17
+                ]
+              }
+            },
+            "description": "Marks these exact word positions"
+          }
+        ]
+      },
+      "Suggestion": {
+        "type": "object",
+        "properties": {
+          "word": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "indices": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "Analysis": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "form": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "lineCount": {
+            "type": "integer"
+          },
+          "stanzaCount": {
+            "type": "integer"
+          },
+          "wordCount": {
+            "type": "integer"
+          },
+          "uniqueWords": {
+            "type": "integer"
+          },
+          "vocabularyRichness": {
+            "type": "number"
+          },
+          "rhymeDensity": {
+            "type": "number"
+          },
+          "rhymeSchemes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "ABCB"
+            ]
+          },
+          "enjambmentRatio": {
+            "type": "number"
+          },
+          "avgWordsPerLine": {
+            "type": "number"
+          },
+          "avgSentenceLength": {
+            "type": "number"
+          },
+          "keyWords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyWord"
+            }
+          },
+          "imageFields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "Loss & memory"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "examples": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "alliteration": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sound": {
+                  "type": "string"
+                },
+                "words": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "line": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "assonance": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "repeatedPhrases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "phrase": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "similes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "punctuation": {
+            "type": "object"
+          }
+        }
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "poems": {
+            "type": "integer"
+          },
+          "totalWords": {
+            "type": "integer"
+          },
+          "distinctWords": {
+            "type": "integer"
+          },
+          "averageWords": {
+            "type": "integer"
+          },
+          "firstPoem": {
+            "type": "string",
+            "format": "date"
+          },
+          "latestPoem": {
+            "type": "string",
+            "format": "date"
+          },
+          "forms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "form": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "color": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tag": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "trends": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "words": {
+                  "type": "integer"
+                },
+                "richness": {
+                  "type": "number"
+                },
+                "rhyme": {
+                  "type": "number"
+                },
+                "imagery": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Likes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "likes": {
+            "type": "integer"
+          },
+          "liked": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Liveness check",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "poems": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collection": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Whole-collection summary and trends",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forms": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Forms in use, with counts",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "form": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "integer"
+                      },
+                      "color": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Theme tags, with counts",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "tag": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Full backup",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/import": {
+      "post": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Restore or merge a backup",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merge",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Add only poems that aren't already present, instead of replacing everything"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "poems": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imported": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems": {
+      "get": {
+        "tags": [
+          "Poems"
+        ],
+        "summary": "List poems",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Matches title, body, tags and form"
+          },
+          {
+            "name": "form",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ode"
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "highlighted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only poems with marked words"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest",
+                "title",
+                "likes"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoemList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Poems"
+        ],
+        "summary": "Create a poem",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PoemInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Poem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Poem id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Poems"
+        ],
+        "summary": "Fetch one poem",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Poem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Poems"
+        ],
+        "summary": "Update a poem",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "description": "Any subset of fields. Editing `body` re-anchors existing highlights to the same words.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PoemInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Poem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Poems"
+        ],
+        "summary": "Delete a poem",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/highlights": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Poem id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "The words the poet has marked",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HighlightSet"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Replace the marked words",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HighlightInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HighlightSet"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Add to the marked words",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HighlightInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HighlightSet"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Clear all marks",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HighlightSet"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/suggestions": {
+      "get": {
+        "tags": [
+          "Highlights"
+        ],
+        "summary": "Key words worth marking",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Poem id"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 6
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Suggestion"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/analysis": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Close reading of one poem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Poem id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Analysis"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/likes": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Poem id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "Like count",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Likes"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "Like a poem",
+        "description": "Identify the reader with an `X-Visitor-Id` header or `visitorId` in the body, so one person cannot like twice.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "visitorId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Likes"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "Remove a like",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "visitorId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Likes"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/comments": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Poem id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "List comments",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Comment"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "Leave a comment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "text"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "text": {
+                    "type": "string",
+                    "maxLength": 600
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/poems/{id}/comments/{commentId}": {
+      "delete": {
+        "tags": [
+          "Engagement"
+        ],
+        "summary": "Remove a comment",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Poem id"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
