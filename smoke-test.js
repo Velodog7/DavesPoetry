@@ -18,6 +18,7 @@ const DATA_FILE = path.join(os.tmpdir(), 'dads-verses-smoke-' + Date.now() + '.j
 process.env.PORT = String(PORT);
 process.env.AUTHOR_TOKEN = TOKEN;
 process.env.DATA_FILE = DATA_FILE;
+process.env.STORE = 'file';
 
 const BASE = `http://localhost:${PORT}/api`;
 const authed = { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
@@ -47,7 +48,7 @@ async function call(method, path, body, headers) {
 }
 
 async function run() {
-  const { server } = require('./server');
+  const server = require('./server');
   await new Promise(resolve => server.listen(PORT, resolve));
   console.log(`\nSmoke test against ${BASE}\n`);
 

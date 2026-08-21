@@ -1,18 +1,15 @@
 {
-  "name": "dads-verses-api",
-  "version": "1.1.0",
-  "description": "REST API for Dad's Verses — poems, author highlights, likes, comments, and literary analysis.",
-  "main": "server.js",
+  "name": "daves-poetry",
+  "version": "1.2.0",
+  "description": "Dave's Poetry — the site and its API.",
+  "private": true,
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "smoke": "node smoke-test.js"
+    "smoke": "node smoke-test.js",
+    "test:store": "node store-test.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {},
-  "license": "MIT",
-  "private": true
+  "engines": { "node": ">=18" },
+  "dependencies": {}
 }

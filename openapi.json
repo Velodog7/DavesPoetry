@@ -2,13 +2,17 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Dad's Verses API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Poems, the author's highlighted words, likes, comments, and literary analysis.\n\nReads are open. The poet's own actions need `Authorization: Bearer <AUTHOR_TOKEN>`.",
     "license": {
       "name": "MIT"
     }
   },
   "servers": [
+    {
+      "url": "https://daves-poetry.vercel.app",
+      "description": "Vercel"
+    },
     {
       "url": "http://localhost:3000",
       "description": "Local"
@@ -50,7 +54,7 @@
         "properties": {
           "error": {
             "type": "string",
-            "example": "unauthorized"
+            "example": "read_only"
           },
           "message": {
             "type": "string"
@@ -195,6 +199,11 @@
           },
           "sample": {
             "type": "boolean"
+          },
+          "blurb": {
+            "type": "string",
+            "description": "The poet's short note about this poem, shown on the poems list in place of the poem itself.",
+            "example": "Written after a morning in my father's garage."
           }
         }
       },
@@ -260,6 +269,11 @@
                 }
               }
             ]
+          },
+          "blurb": {
+            "type": "string",
+            "maxLength": 280,
+            "description": "Short note shown on the poems list"
           }
         }
       },
@@ -1694,6 +1708,87 @@
             }
           },
           "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/site": {
+      "get": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Site title and subtitle",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "byline": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Rename the site",
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "byline": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
             "description": "Error",
             "content": {
               "application/json": {

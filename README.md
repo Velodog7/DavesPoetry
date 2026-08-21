@@ -1,221 +1,254 @@
-# Dad's Verses — REST API
+# Dave's Poetry — site + API
 
-A small HTTP API over your dad's poems: the poems themselves, the words he has
-chosen to highlight, likes, comments, and the same literary analysis the website
-runs (form detection, key words, imagery, sound, syntax).
+## What went wrong, and what changed
 
-No dependencies. Node 18 or newer. Data lives in a single JSON file.
+The old `server.js` was a long-running Node server: it called `server.listen()`
+and waited for connections. Vercel never runs a process like that. It runs one
+short-lived **function per request** and calls an exported handler. There was no
+handler to call, so every request died with `FUNCTION_INVOCATION_FAILED`.
+
+There was a second problem waiting behind it: the API stored poems in
+`data.json` on disk. On Vercel the filesystem is **read-only**, and anything
+written to the one writable directory (`/tmp`) disappears when the function goes
+cold. Even with the crash fixed, every like, comment and edit would have
+evaporated within minutes.
+
+Both are fixed:
+
+- **`lib/api.js`** holds every route and exports a plain `(req, res)` handler.
+- **`api/index.js`** is the Vercel entry point — three lines that re-export it.
+- **`server.js`** is now just a local wrapper around the same handler, so what
+  you run on your laptop is the same code Vercel runs.
+- **`lib/store.js`** abstracts storage, with a real persistent option for
+  serverless.
 
 ---
 
-## Running it
+## Deploying it
+
+### 1. Repo layout
+
+Put these at the **root** of the repo:
+
+```
+api/index.js          ← Vercel finds this automatically
+lib/api.js
+lib/store.js
+lib/poetry-engine.js
+data/seed.json        ← the starting poems
+index.html            ← the website
+vercel.json
+package.json
+server.js             ← local only; Vercel ignores it
+smoke-test.js
+store-test.js
+```
+
+There is nothing to build and nothing to install — no dependencies.
+
+### 2. Connect a database (this is the important step)
+
+Vercel no longer has its own "KV" tile — that product moved into the marketplace
+and is now **Upstash**. In the dashboard:
+
+**Storage → Upstash → Redis → Create**
+
+Connect it to the `daves-poetry` project when prompted. Upstash injects
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or the `KV_REST_API_*`
+spelling of the same pair), which the API picks up with no further
+configuration. On the first request it copies `data/seed.json` into the store.
+There is a free tier that is far more than a poetry site needs.
+
+> **About the "custom prefix" box.** Vercel offers one when you connect the
+> database, and it renames *every* variable: type `davespoems` and you get
+> `davespoems_KV_REST_API_URL` instead of `KV_REST_API_URL`. The API handles
+> this — it matches the known name at the end of any variable, and pairs the URL
+> with the token carrying the same prefix, so two connected databases never get
+> their credentials crossed. Leaving the box empty is still simpler. Either way
+> `/api/health` prints the names it actually found, prefix included.
+
+> **Pick Upstash, not the "Redis" tile.** They look interchangeable in that list
+> and they are not:
+>
+> | | Upstash → Redis | Redis (Redis Cloud) |
+> |---|---|---|
+> | Credentials | `UPSTASH_REDIS_REST_URL` + `_TOKEN` | `REDIS_URL` connection string |
+> | Client library | none — plain REST | `npm install redis` |
+> | Free plan persistence | yes, written to disk | **no — RAM only** |
+>
+> That last row is the one that matters. Redis Cloud's free plan says it plainly
+> on the confirmation screen: *"RAM-only Redis database. No persistence or high
+> availability."* Everything lives in memory, so a restart on their side takes
+> the poems with it. Fine for a cache; wrong for the only copy of someone's
+> writing.
+>
+> If you have already created a Redis Cloud database, delete it and create an
+> Upstash one instead. The API does support connection-string Redis — set
+> `STORE=redis` and add `"redis": "^4"` to `dependencies` — but on a free plan
+> that has no persistence, don't rely on it.
+
+Without a database the API still **serves** the poems, but refuses writes with a
+clear `503 read_only` rather than pretending to save.
+
+### Checking it worked
 
 ```bash
-cd api
-node server.js
+curl https://daves-poetry.vercel.app/api/health
 ```
 
-Then visit <http://localhost:3000/api/health>.
+```json
+{
+  "status": "ok",
+  "storage": { "kind": "kv", "writable": true, "detail": "Upstash Redis (via UPSTASH_REDIS_REST_URL)" },
+  "authorTokenConfigured": true,
+  "poems": 6,
+  "environmentSeen": { "UPSTASH_REDIS_REST_URL": true, "UPSTASH_REDIS_REST_TOKEN": true, "AUTHOR_TOKEN": true },
+  "nextStep": null
+}
+```
 
-Configuration is all environment variables:
+`environmentSeen` lists which variables the running deploy can actually read —
+names only, never values — and `nextStep` tells you what is still missing. If
+`kind` is `memory`, nothing is connected yet.
 
-| Variable | Default | What it does |
+### 3. Set the author token
+
+**Settings → Environment Variables → Add**
+
+| Name | Value |
+|---|---|
+| `AUTHOR_TOKEN` | a long random string you keep private |
+
+Generate one with `openssl rand -hex 24`.
+
+Without it the API refuses *all* writes with `503 no_author_token` — deliberately,
+so a fresh deploy is never wide open to the internet.
+
+Redeploy after adding environment variables; Vercel only picks them up on a new
+build.
+
+---
+
+## Environment variables
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `PORT` | `3000` | Port to listen on |
-| `DATA_FILE` | `./data.json` | Where poems are stored |
-| `AUTHOR_TOKEN` | *generated at boot* | Secret needed for the poet's own actions |
-| `CORS_ORIGIN` | `*` | Restrict which sites may call the API |
+| `AUTHOR_TOKEN` | *(none)* | Required for any write. Without it, writes are refused. |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | *(none)* | Set by the Upstash integration. `KV_REST_API_URL` / `_TOKEN` also work, as does either pair behind a custom prefix. |
+| `REDIS_URL` | *(none)* | A connection string (Redis Cloud). Needs the `redis` package installed. |
+| `STORE` | auto | Force `kv`, `redis`, `file` or `memory` instead of auto-detecting. |
+| `DATA_FILE` | `data/data.json` | Where the file store writes, when using one. |
+| `KV_KEY` | `dads-verses:data` | The key the collection is stored under. |
+| `CORS_ORIGIN` | `*` | Restrict which sites may call the API. |
+
+---
+
+## Running locally
 
 ```bash
-PORT=4000 AUTHOR_TOKEN=a-long-random-string node server.js
+AUTHOR_TOKEN=dev-token node server.js
 ```
 
-If you don't set `AUTHOR_TOKEN`, the server generates one and prints it on
-startup — so it's never accidentally open to the world, but it changes on every
-restart. Set it explicitly for anything real.
+- Site — <http://localhost:3000>
+- API — <http://localhost:3000/api/health>
 
----
+It uses the file store on disk, so your local poems persist normally.
 
-## Who can do what
-
-**Anyone** can read poems, read highlights, read the analysis, like a poem, and
-leave a comment.
-
-**Only the author** can create, edit or delete poems, set highlights, import
-data, export data, or remove a comment. Those requests need the token:
-
-```
-Authorization: Bearer <AUTHOR_TOKEN>
+```bash
+npm run smoke        # 33 checks against every route
+npm run test:store   # 19 checks on storage detection, prefixes included
 ```
 
 ---
 
-## Endpoints
+## The endpoints
 
-### Service
+Unchanged from before, with one addition (`/api/site`). Full machine-readable
+detail is in `openapi.json`.
 
-| Method | Path | Notes |
+| | Path | Auth |
 |---|---|---|
-| `GET` | `/api/health` | Liveness plus a poem count |
-| `GET` | `/api/collection` | Whole-collection summary, form tally, and per-poem trends |
-| `GET` | `/api/forms` | Every form in use, with counts and display colours |
-| `GET` | `/api/tags` | Every theme tag, with counts |
-| `GET` | `/api/export` | 🔒 Full raw data, for backups |
-| `POST` | `/api/import?merge=true` | 🔒 Restore or merge a backup |
-
-### Poems
-
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/poems` | List. Query: `search`, `form`, `tag`, `highlighted=true`, `sort` (`newest`\|`oldest`\|`title`\|`likes`), `limit`, `offset` |
-| `POST` | `/api/poems` | 🔒 Create. Body: `{title, body, date?, tags?, style?, highlights?}` |
-| `GET` | `/api/poems/:id` | One poem, with its detected form and key words |
-| `PATCH` | `/api/poems/:id` | 🔒 Update any subset of fields |
-| `DELETE` | `/api/poems/:id` | 🔒 Delete |
-
-### Highlights — the words the poet has marked
-
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/poems/:id/highlights` | The marked words and their positions |
-| `PUT` | `/api/poems/:id/highlights` | 🔒 Replace. Body: `{"words":["hold"]}` or `{"indices":[3,7]}` |
-| `POST` | `/api/poems/:id/highlights` | 🔒 Add to the existing set |
-| `DELETE` | `/api/poems/:id/highlights` | 🔒 Clear them all |
-| `GET` | `/api/poems/:id/suggestions?limit=6` | Key words worth marking, with their positions |
-
-A highlight is stored as the **position of a word** in the poem, counting words
-from zero. That means the same word can be marked in one place and left plain in
-another. When the poem's text is edited, highlights are re-anchored to the same
-words automatically — insert a line at the top and the marks move with the words
-rather than sliding out of place.
-
-Passing `{"words": [...]}` marks *every* occurrence of those words; passing
-`{"indices": [...]}` gives you exact control.
-
-### Analysis
-
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/poems/:id/analysis` | Form and evidence, rhyme density and schemes, enjambment, key words, imagery fields, alliteration, assonance, repeated phrases, similes, punctuation habits |
-
-### Engagement
-
-| Method | Path | Notes |
-|---|---|---|
-| `GET` | `/api/poems/:id/likes` | Current count |
-| `POST` | `/api/poems/:id/likes` | Like. Identify the reader via `X-Visitor-Id` header or `{"visitorId":"…"}` |
-| `DELETE` | `/api/poems/:id/likes` | Unlike |
-| `GET` | `/api/poems/:id/comments` | List |
-| `POST` | `/api/poems/:id/comments` | Add. Body: `{name, text}` |
-| `DELETE` | `/api/poems/:id/comments/:commentId` | 🔒 Remove |
-
-🔒 = author token required.
-
----
-
-## Examples
+| `GET` | `/api/health` | — |
+| `GET` | `/api/poems` · `?search= &form= &tag= &highlighted=true &sort= &limit= &offset=` | — |
+| `POST` | `/api/poems` | 🔒 |
+| `GET` `PATCH` `DELETE` | `/api/poems/:id` | 🔒 to change |
+| `GET` `PUT` `POST` `DELETE` | `/api/poems/:id/highlights` | 🔒 to change |
+| `GET` | `/api/poems/:id/suggestions` | — |
+| `GET` | `/api/poems/:id/analysis` | — |
+| `GET` `POST` `DELETE` | `/api/poems/:id/likes` | — |
+| `GET` `POST` | `/api/poems/:id/comments` | — |
+| `DELETE` | `/api/poems/:id/comments/:commentId` | 🔒 |
+| `GET` `PATCH` | `/api/site` | 🔒 to change |
+| `GET` | `/api/collection` · `/api/forms` · `/api/tags` | — |
+| `GET` | `/api/export` | 🔒 |
+| `POST` | `/api/import?merge=true` | 🔒 |
 
 ```bash
 TOKEN=your-author-token
-API=http://localhost:3000/api
+API=https://daves-poetry.vercel.app/api
 
-# Every ode, newest first
 curl "$API/poems?form=ode"
 
-# What has he marked in this one?
-curl "$API/poems/seed3/highlights"
-
-# Mark every instance of two words
 curl -X PUT "$API/poems/seed3/highlights" \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"words":["hold","bless"]}'
 
-# Mark two exact positions instead
-curl -X PUT "$API/poems/seed3/highlights" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"indices":[0,1]}'
-
-# Read the close analysis
-curl "$API/poems/seed3/analysis"
-
-# Add a poem
-curl -X POST "$API/poems" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"Ode to the Back Porch","body":"You never asked for praise, plain porch,\nyou steady shelf of weathered pine.","tags":["home","praise"],"highlights":["praise"]}'
-
-# Back everything up
 curl -H "Authorization: Bearer $TOKEN" "$API/export" > backup.json
 ```
 
 ---
 
-## Errors
+## Loading his real poems
 
-Every failure returns JSON with a stable `error` code:
+Export from the Claude-hosted version (open it, unlock author mode, open the
+browser console):
 
-```json
-{ "error": "unauthorized", "message": "This needs the author token: ..." }
+```js
+copy(DadsVerses.exportJSON(true))
 ```
 
-| Code | Status | Meaning |
-|---|---|---|
-| `bad_request` | 400 | Something required was missing or malformed |
-| `invalid_json` | 400 | The body wasn't valid JSON |
-| `unauthorized` | 401 | Missing or wrong author token |
-| `not_found` | 404 | No such poem, comment, or route |
-| `method_not_allowed` | 405 | Wrong verb for that path |
-| `payload_too_large` | 413 | Body over 512 KB |
-| `internal_error` | 500 | A bug — check the server log |
-
----
-
-## Moving data between the website and this server
-
-The published site holds its own copy of the poems. To move them here:
-
-1. Open the site, unlock author mode, and open the browser console.
-2. Run `copy(DadsVerses.exportJSON(true))` — the data is now on your clipboard.
-3. Paste it into `data.json` next to `server.js` and restart the server.
-
-Going the other way:
+Then either paste it into `data/seed.json` and redeploy, or push it straight in:
 
 ```bash
-curl -H "Authorization: Bearer $TOKEN" "$API/export" > from-server.json
-```
-
-then in the site's console, with author mode unlocked:
-
-```js
-DadsVerses.importJSON(pastedJsonString)          // replace everything
-DadsVerses.importJSON(pastedJsonString, {merge: true})  // only add what's new
-```
-
-The two share identical resource shapes, so anything you write against one works
-against the other. The in-page API even mirrors the HTTP routes:
-
-```js
-await DadsVerses.fetch('/api/poems?form=ode')
-await DadsVerses.fetch('/api/poems/seed3/highlights', { method: 'PUT', body: { words: ['hold'] } })
+curl -X POST "$API/import" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data-binary @backup.json
 ```
 
 ---
 
-## Files
+## How the site talks to the API
 
-| File | What it is |
+`index.html` works out where it is running and saves accordingly:
+
+| Where | How it saves |
 |---|---|
-| `server.js` | The whole server — routing, auth, storage |
-| `poetry-engine.js` | The analysis engine, extracted from the site so both agree exactly |
-| `data.json` | The poems (created on first write if missing) |
-| `openapi.json` | Machine-readable spec, for Postman / Swagger / codegen |
-| `smoke-test.js` | `npm run smoke` — starts the server and exercises every route |
+| On this server / Vercel | Reads and writes over the API. Likes and comments from any visitor persist for everyone. |
+| Hosted on claude.ai | Republishes itself, as before. |
+| Opened as a plain file | Shows the built-in poems and saves nothing, saying so plainly. |
 
-## A note on the analysis
+Nothing to configure — it probes `/api/health` on load. To point the page at an
+API on another domain, add this to the `<head>`:
 
-The engine is heuristic: it counts syllables, word endings, opening sounds, line
-positions and word families. It's good at describing what a poem *does* — its
-form, its repetitions, where it breaks its lines. It has no opinion on whether
-the poem is any good. That part stays with the reader.
+```html
+<meta name="poems-api" content="https://your-api.example.com/api">
+```
+
+### Signing in to write
+
+On the API version the lock button asks for the **author token**, not a PIN —
+the same `AUTHOR_TOKEN` you set in the environment. It is kept in that browser's
+local storage, so your dad signs in once per device. Sign out clears it.
+
+Readers need nothing: liking and commenting are open to anyone.
+
+From the console, `DadsVerses.backend()` reports which mode the page is in, and
+`DadsVerses.reload()` pulls fresh data from the server.
+
+## A note on concurrency
+
+Each write reads the whole collection, changes it, and writes it back. Two
+people saving in the same second could have one change overwrite the other.
+For a family poetry site that is a non-issue; worth knowing if it ever gets busy.
