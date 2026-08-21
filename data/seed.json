@@ -1,0 +1,175 @@
+{
+  "site": {
+    "name": "Dad's Verses",
+    "byline": "Collected poems"
+  },
+  "poems": [
+    {
+      "id": "seed1",
+      "date": "2025-11-08",
+      "title": "Saturday Garage",
+      "sample": true,
+      "tags": [
+        "family",
+        "memory"
+      ],
+      "blurb": "Written after a morning helping my father in his garage. We fixed nothing. It was the best hour of that year.",
+      "body": "The garage door groans up like morning,\nand dust goes gold in the one bright beam.\nWrenches lined by size, not sentiment,\nthough sentiment is why they're clean.\n\nYou hand me tools before I ask.\nI hand you nothing back but time —\nthe kind that doesn't rush the bolt,\nthe kind that fathers learn to find.\n\nRadio low. Coffee going cold.\nSome engine ticking as it cools.\nWe are not fixing much of anything.\nWe are just here, among the tools.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.85,
+        "align": "left",
+        "accent": "#3B6FD4"
+      },
+      "likedBy": [
+        "seed-a",
+        "seed-b",
+        "seed-c"
+      ],
+      "comments": [
+        {
+          "id": "c1",
+          "name": "A reader",
+          "text": "The last stanza got me. That is exactly what those Saturdays felt like.",
+          "ts": "2025-11-10T14:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "seed2",
+      "date": "2026-01-22",
+      "title": "What the Maple Knows",
+      "sample": true,
+      "tags": [
+        "nature",
+        "seasons"
+      ],
+      "blurb": "The tree outside the kitchen window turns before anything else on the street. I have watched it do this for eleven years.",
+      "body": "Every year it lets go first —\nred before the others blush,\nbrave or simply tired, who's to say,\nof holding on so hard, so hushed.\n\nI used to think that losing leaves\nwas something like defeat.\nNow I watch the maple empty out\nand call the emptying complete.\n\nBare branches hold the winter sky\nthe way a hand holds nothing well —\nopen, waiting, unashamed,\nwith a story it won't tell.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.9,
+        "align": "left",
+        "accent": "#2FA36B"
+      },
+      "likedBy": [
+        "seed-a"
+      ],
+      "comments": []
+    },
+    {
+      "id": "seed3",
+      "date": "2026-03-15",
+      "title": "Ode to a Kitchen Table",
+      "sample": true,
+      "tags": [
+        "home",
+        "praise"
+      ],
+      "blurb": "My mother’s table, which outlasted two houses and everyone’s opinion of it.",
+      "body": "Fifty years and you have not complained,\nyou patient acre of scarred and honest oak.\nYou held the homework and the hospital forms,\nthe birthday candles, the bad news gently spoke.\n\nYou wear your history where we can read it:\nthat ring from a glass nobody thought to lift,\nthe gouge my brother swears he didn't make,\nthe worn pale places — every one a gift.\n\nOther furniture gets replaced. Not you.\nYou are the argument for staying put,\nfor being the flat and steady thing\na family sets its elbows and its supper on.\n\nBless your four plain legs. Bless your dull shine.\nBless the way you never once gave way\nunder all the weight we asked you to hold —\nand held, and hold, and will hold, day by day.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.9,
+        "align": "left",
+        "accent": "#E08A2E"
+      },
+      "likedBy": [
+        "seed-a",
+        "seed-b"
+      ],
+      "comments": [
+        {
+          "id": "c2",
+          "name": "M.",
+          "text": "I can picture the exact table. The gouge line made me laugh out loud.",
+          "ts": "2026-03-16T11:20:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "seed4",
+      "date": "2026-06-30",
+      "title": "Growing Room",
+      "sample": true,
+      "tags": [
+        "family",
+        "time"
+      ],
+      "blurb": "The week we rearranged a bedroom for a child who had already left it.",
+      "body": "We moved your bed to make you room\nthough you were barely gone.\nI stood there with a screwdriver\nnot knowing what came on\n\nso strong it stopped my hands —\njust a bed frame, just a wall,\njust a kid who isn't little,\nwho was never little at all,\n\nnot really, not the way I kept it\nfolded in my chest.\nThe room got bigger. So did you.\nI am still doing my best\n\nto let the small rooms go.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.9,
+        "align": "left",
+        "accent": "#D9538F"
+      },
+      "likedBy": [
+        "seed-a",
+        "seed-b",
+        "seed-c",
+        "seed-d"
+      ],
+      "comments": []
+    },
+    {
+      "id": "seed5",
+      "date": "2026-07-18",
+      "title": "Ode to the Coffee Cup Left Out All Night",
+      "sample": true,
+      "tags": [
+        "home",
+        "praise",
+        "morning"
+      ],
+      "blurb": "In praise of an ordinary object that waits without complaint. Started as a joke and stopped being one.",
+      "body": "Faithful ring on the windowsill,\nyou kept your inch of cold black tide\nthrough all the hours I was asleep\nand never once complained, or dried.\n\nYou are not beautiful. You chipped\nin ninety-eight and stayed. You hold\nwhat I abandoned, and you hold it\nthe way the patient hold the old.\n\nSmall brown moon, low and steady,\nfirst thing my hand finds in the gray —\nteach me your trick of simply waiting\nfor someone to come back your way.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.9,
+        "align": "left",
+        "accent": "#8B5CF6"
+      },
+      "likedBy": [
+        "seed-a",
+        "seed-c"
+      ],
+      "comments": []
+    },
+    {
+      "id": "seed6",
+      "date": "2026-08-10",
+      "title": "Late August",
+      "sample": true,
+      "tags": [
+        "nature",
+        "memory"
+      ],
+      "blurb": "The last mow of the season, and the particular light that only arrives once the summer is tired.",
+      "body": "The light comes in low and gold now,\ntired of standing straight up all summer.\nCicadas wind down like a clock\nnobody remembered to keep wound.\n\nI mow the last of the long grass\nand the smell of it says something\nI don't have better words for —\ngreen, and going, and good.\n\nSoon the maple will start its argument\nwith the sky. Soon the mornings\nwill ask for a jacket. But tonight\nthe porch light is enough. The bugs\nknow it. I do too.",
+      "style": {
+        "font": "serif",
+        "size": 1.22,
+        "leading": 1.85,
+        "align": "left",
+        "accent": "#0EA5B7"
+      },
+      "likedBy": [
+        "seed-a"
+      ],
+      "comments": [
+        {
+          "id": "c3",
+          "name": "A reader",
+          "text": "\"tired of standing straight up all summer\" — stealing that line for how I feel too.",
+          "ts": "2026-08-11T09:05:00.000Z"
+        }
+      ]
+    }
+  ]
+}
