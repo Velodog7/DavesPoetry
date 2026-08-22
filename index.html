@@ -2321,6 +2321,11 @@ function confirmDeleteModal(){
     '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
     '<button type="button" class="btn btn-danger" data-action="confirm-delete" data-id="'+(p?p.id:'')+'">Delete</button></div></div></div>';
 }
+/* How many of the poems on the page are still the shipped examples. */
+function sampleCount(){
+  return state.poems.filter(function(p){ return p.sample; }).length;
+}
+
 /* The keypad. Digits, a backspace, and nothing else to get lost in. */
 function pinPad(len,min){
   var dots='';
@@ -2360,7 +2365,9 @@ function authorModal(){
           '<span class="label label-ai">Author</span><h2>'+(runtime.authorSetup?'Reset the PIN':'Create your account')+'</h2>'+
           '<p class="modal-sub">'+(runtime.authorSetup
             ? 'Forgotten the PIN? Enter the setup key and choose a new one. Every device signed in now will be signed out.'
-            : 'Choose a PIN and it is yours from then on \u2014 you will never need the setup key again. The key is the AUTHOR_TOKEN from the site\u2019s environment variables.')+'</p>'+
+            : 'Choose a PIN and it is yours from then on \u2014 you will never need the setup key again. '+
+              'Whoever set this site up has the key.'+
+              (sampleCount()?' The '+sampleCount()+' example poems will be cleared, leaving the page yours.':''))+'</p>'+
           '<form id="author-setup-form">'+
             '<div class="field"><label for="setup-name">Your name</label>'+
               '<input type="text" id="setup-name" name="name" maxlength="40" placeholder="Dave" '+
@@ -2674,6 +2681,7 @@ async function submitAuthorSetup(e){
     backend.token=out.token; saveToken(out.token);      /* replaced by a session immediately */
     backend.authorName=out.name||null; backend.accountConfigured=true;
     runtime.authorSetup=false; runtime.authorMode=true; runtime.modal=null;
+    if(out.clearedSamples) await loadFromApi();     /* the examples are gone; re-read */
     render();
     showToast(out.reset?'PIN changed':'Account created — your PIN works from now on');
   }catch(err){

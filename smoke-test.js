@@ -149,6 +149,17 @@ async function run() {
   r = await call('GET', '/auth');
   check('reports no account yet', r.status === 200 && r.data.configured === false);
 
+  /* Two example poems: one untouched, one the poet has already edited. Only
+     the untouched one should disappear when the account is created. */
+  await call('POST', '/import?merge=true', {
+    poems: [
+      { id: 'sample-a', title: 'Shipped Example', body: 'A line.\nAnother line.', sample: true },
+      { id: 'sample-b', title: 'Edited Example', body: 'A line.\nAnother line.', sample: false }
+    ]
+  }, authed);
+  r = await call('GET', '/poems/sample-a');
+  check('an example poem is in place', r.status === 200 && r.data.sample === true);
+
   r = await call('POST', '/auth/setup', { pin: '4913' });
   check('setup refuses without the setup key', r.status === 401);
 
@@ -164,7 +175,13 @@ async function run() {
   r = await call('POST', '/auth/setup', { pin: '4913', name: 'Dave' }, authed);
   check('creates the account with the setup key', r.status === 201 && !!r.data.token);
   check('names the author', r.data.name === 'Dave');
+  check('clears the untouched examples', r.data.clearedSamples === 1);
   const session = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
+
+  r = await call('GET', '/poems/sample-a');
+  check('the untouched example is gone', r.status === 404);
+  r = await call('GET', '/poems/sample-b');
+  check('the edited one is kept', r.status === 200);
 
   r = await call('GET', '/auth');
   check('now reports an account', r.status === 200 && r.data.configured === true && r.data.name === 'Dave');
