@@ -149,6 +149,15 @@ async function run() {
   r = await call('GET', '/auth');
   check('reports no account yet', r.status === 200 && r.data.configured === false);
 
+  /* A retitled deploy must win over whatever the store was first seeded with,
+     right up until someone owns the site. Otherwise the page paints the new
+     name and the API immediately replaces it with the old one. */
+  const seeded = require('./lib/store').readSeed();
+  await call('POST', '/import?merge=true', { site: { name: 'Stale Old Name', byline: 'x' }, poems: [] }, authed);
+  r = await call('GET', '/site');
+  check('an unowned site takes its name from the deploy',
+    r.status === 200 && r.data.name === seeded.site.name, JSON.stringify(r.data));
+
   /* Two example poems: one untouched, one the poet has already edited. Only
      the untouched one should disappear when the account is created. */
   await call('POST', '/import?merge=true', {
@@ -182,6 +191,14 @@ async function run() {
   check('the untouched example is gone', r.status === 404);
   r = await call('GET', '/poems/sample-b');
   check('the edited one is kept', r.status === 200);
+
+  r = await call('GET', '/site');
+  check('the deploy name is now frozen as his', r.status === 200 && r.data.name === seeded.site.name);
+  r = await call('PATCH', '/site', { name: 'What Dave Calls It' }, session);
+  check('and from here only he changes it', r.status === 200 && r.data.name === 'What Dave Calls It');
+  r = await call('GET', '/site');
+  check('his choice sticks, deploy or no deploy', r.data.name === 'What Dave Calls It');
+  await call('PATCH', '/site', { name: seeded.site.name }, session);
 
   r = await call('GET', '/auth');
   check('now reports an account', r.status === 200 && r.data.configured === true && r.data.name === 'Dave');

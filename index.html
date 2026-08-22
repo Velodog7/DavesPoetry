@@ -1581,6 +1581,21 @@ var backend={ mode:'preview', token:null, storage:null, tokenConfigured:false,
 function loadToken(){ try{ return localStorage.getItem('dv_token')||null; }catch(e){ return null; } }
 function saveToken(t){ try{ t?localStorage.setItem('dv_token',t):localStorage.removeItem('dv_token'); }catch(e){} }
 
+/* The first paint happens before the server has answered, so the title it
+   shows is a guess — and a wrong guess is worse than a slow one: the reader
+   watches the name change under them. Remember what the server last said and
+   open with that instead. Written only in API mode, so nothing else sees it. */
+function cacheSite(site){
+  try{ localStorage.setItem('dv_site',JSON.stringify({name:site.name,byline:site.byline})); }catch(e){}
+}
+function applyCachedSite(){
+  try{
+    var raw=localStorage.getItem('dv_site'); if(!raw) return;
+    var s=JSON.parse(raw);
+    if(s&&s.name){ state.site.name=s.name; state.site.byline=s.byline||''; }
+  }catch(e){}
+}
+
 async function apiFetch(path,opts){
   opts=opts||{};
   var headers=Object.assign({'X-Visitor-Id':visitorId},opts.headers||{});
@@ -1626,7 +1641,11 @@ function apiPoemPayload(p){
 async function loadFromApi(){
   var site=await apiFetch('/site');
   var list=await apiFetch('/poems?sort=newest');
-  if(site){ state.site.name=site.name||state.site.name; state.site.byline=site.byline||''; }
+  if(site){
+    state.site.name=site.name||state.site.name;
+    state.site.byline=site.byline||'';
+    cacheSite(state.site);                 /* so the next load opens correctly */
+  }
   state.poems=(list.poems||[]).map(poemFromApi);
   _analysisCache={};
 }
@@ -2766,7 +2785,9 @@ function submitAuthorSettings(e){
   var fd=new FormData(e.target);
   state.site.name=(fd.get('name')||"Multitudes of Dave: Selected Poems").trim();
   state.site.byline=(fd.get('byline')||'').trim();
-  runtime.modal=null; render(); persist({kind:'site'}); showToast('Settings saved');
+  runtime.modal=null;
+  if(backend.mode==='api') cacheSite(state.site);
+  render(); persist({kind:'site'}); showToast('Settings saved');
 }
 function submitRename(e){
   e.preventDefault();
@@ -2776,6 +2797,7 @@ function submitRename(e){
   state.site.name=name.slice(0,60);
   state.site.byline=(fd.get('byline')||'').trim().slice(0,80);
   runtime.modal=null;
+  if(backend.mode==='api') cacheSite(state.site);
   render(); persist({kind:'site'}); showToast('Renamed');
 }
 function submitChangePin(e){
@@ -3276,6 +3298,7 @@ function boot(){
   document.addEventListener('pointerup',pickerPointerUp);
   document.addEventListener('pointercancel',pickerPointerUp);
   installAPI();
+  applyCachedSite();
   render();
   initBackend().then(function(){
     render();
