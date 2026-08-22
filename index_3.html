@@ -1,0 +1,3272 @@
+<title>Dad's Verses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style id="app-styles">
+  /* ================= TOKENS ================= */
+  :root{
+    --bg:#F4F3F0;
+    --surface:#FFFFFF;
+    --surface-2:#FAFAF8;
+    --fill:rgba(20,20,24,.045);
+    --fill-2:rgba(20,20,24,.075);
+    --ink:#16161A;
+    --ink-2:#6A6A73;
+    --ink-3:#9B9BA3;
+    --accent:#3B6FD4;
+    --accent-2:#2E58AC;
+    --accent-wash:#E7EEFB;
+    --like:#E5484D;
+    --like-wash:#FCE9EA;
+    --hairline:rgba(20,20,24,.09);
+    --border:rgba(20,20,24,.10);
+    --focus:#3B6FD4;
+    --shadow-1:0 1px 2px rgba(18,20,28,.05);
+    --shadow-2:0 2px 5px rgba(18,20,28,.05), 0 12px 28px -14px rgba(18,20,28,.16);
+    --shadow-3:0 6px 14px rgba(18,20,28,.08), 0 26px 48px -20px rgba(18,20,28,.28);
+    --glass:rgba(244,243,240,.78);
+
+    --f-ui:"Figtree", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    --f-serif:"Shippori Mincho", "Hiragino Mincho ProN", "Iowan Old Style", Georgia, serif;
+    --f-display:var(--f-serif);
+    --f-verse:var(--f-serif);
+
+    --step:1;
+    --fs-micro:calc(0.7rem * var(--step));
+    --fs-cap:calc(0.81rem * var(--step));
+    --fs-ui:calc(0.94rem * var(--step));
+    --fs-read:calc(1.06rem * var(--step));
+    --fs-verse:calc(1.2rem * var(--step));
+    --fs-h3:calc(1.34rem * var(--step));
+    --fs-h2:calc(1.95rem * var(--step));
+    --fs-h1:calc(2.9rem * var(--step));
+
+    --r-xs:8px;
+    --r-sm:12px;
+    --r-md:16px;
+    --r-lg:22px;
+    --r-xl:28px;
+    --r-pill:999px;
+
+    /* iOS-flavoured motion: firm ease-out for movement, spring for feedback */
+    --ease:cubic-bezier(.32,.72,0,1);
+    --spring:cubic-bezier(.34,1.4,.64,1);
+    --dur-s:180ms;
+    --dur-m:380ms;
+    --gutter:clamp(18px, 4.5vw, 56px);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F0F12;
+      --surface:#1A1A1E;
+      --surface-2:#222227;
+      --fill:rgba(255,255,255,.06);
+      --fill-2:rgba(255,255,255,.10);
+      --ink:#F2F2EF;
+      --ink-2:#A2A2AA;
+      --ink-3:#6E6E77;
+      --accent:#7FA8F5;
+      --accent-2:#9CBCFA;
+      --accent-wash:#1A2740;
+      --like:#FF6B70;
+      --like-wash:#361A1C;
+      --hairline:rgba(255,255,255,.11);
+      --border:rgba(255,255,255,.13);
+      --focus:#7FA8F5;
+      --shadow-1:0 1px 2px rgba(0,0,0,.4);
+      --shadow-2:0 2px 6px rgba(0,0,0,.4), 0 14px 30px -16px rgba(0,0,0,.7);
+      --shadow-3:0 8px 18px rgba(0,0,0,.5), 0 30px 56px -22px rgba(0,0,0,.8);
+      --glass:rgba(15,15,18,.76);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F0F12;
+    --surface:#1A1A1E;
+    --surface-2:#222227;
+    --fill:rgba(255,255,255,.06);
+    --fill-2:rgba(255,255,255,.10);
+    --ink:#F2F2EF;
+    --ink-2:#A2A2AA;
+    --ink-3:#6E6E77;
+    --accent:#7FA8F5;
+    --accent-2:#9CBCFA;
+    --accent-wash:#1A2740;
+    --like:#FF6B70;
+    --like-wash:#361A1C;
+    --hairline:rgba(255,255,255,.11);
+    --border:rgba(255,255,255,.13);
+    --focus:#7FA8F5;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4);
+    --shadow-2:0 2px 6px rgba(0,0,0,.4), 0 14px 30px -16px rgba(0,0,0,.7);
+    --shadow-3:0 8px 18px rgba(0,0,0,.5), 0 30px 56px -22px rgba(0,0,0,.8);
+    --glass:rgba(15,15,18,.76);
+  }
+
+  :root[data-contrast="high"]{ --ink-2:var(--ink); --ink-3:var(--ink); --hairline:var(--ink); --border:var(--ink); }
+  :root[data-contrast="high"]:not([data-theme="dark"]){ --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --accent:#123A8A; --accent-wash:#DCE6FA; --like:#A81219; }
+  :root[data-theme="dark"][data-contrast="high"]{ --bg:#000000; --surface:#000000; --ink:#FFFFFF; --accent:#A9C6FF; --accent-wash:#12203A; --like:#FF9A9E; }
+
+  /* ================= RESET ================= */
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--f-ui); font-size:var(--fs-ui); font-weight:400; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    transition:background var(--dur-m) var(--ease), color var(--dur-m) var(--ease);
+  }
+  h1,h2,h3,h4,p,ul,figure{ margin:0; }
+  ul{ list-style:none; padding:0; }
+  button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  input,textarea,select{ font-family:inherit; font-size:inherit; color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+  :focus-visible{ outline:3px solid color-mix(in srgb, var(--focus) 55%, transparent); outline-offset:2px; border-radius:var(--r-sm); }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+  }
+  [data-motion="off"] *,[data-motion="off"] *::before,[data-motion="off"] *::after{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* ================= SHARED ================= */
+  .label{
+    font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:600;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3);
+  }
+  .label-ai{ color:var(--accent); }
+  .num-tab{ font-variant-numeric:tabular-nums; }
+
+  .card{
+    background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-1);
+    border:1px solid var(--hairline);
+  }
+
+  /* ================= SHELL ================= */
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+
+  .masthead{
+    position:sticky; top:0; z-index:40; background:var(--glass);
+    backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .masthead-inner{
+    max-width:1180px; margin:0 auto; padding:11px var(--gutter);
+    display:flex; align-items:center; gap:20px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .seal{
+    width:30px; height:30px; border-radius:9px; flex-shrink:0; display:grid; place-items:center;
+    background:linear-gradient(160deg, var(--accent), var(--accent-2));
+    color:#fff; font-family:var(--f-display); font-size:15px; font-weight:600; line-height:1;
+    box-shadow:0 2px 6px -1px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .brand-mark{ font-family:var(--f-display); font-weight:600; font-size:1.08rem; letter-spacing:0; white-space:nowrap; }
+  .brand-byline{ font-size:var(--fs-micro); font-weight:500; color:var(--ink-3); white-space:nowrap; letter-spacing:.02em; }
+
+  .navbtns{ display:flex; gap:8px; margin-left:8px; }
+  .navbtn{
+    padding:9px 18px; border-radius:var(--r-pill); font-size:var(--fs-cap); font-weight:600;
+    color:var(--ink-2); white-space:nowrap; border:1px solid transparent;
+    transition:color var(--dur-s) var(--ease), background var(--dur-s) var(--ease),
+      border-color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .navbtn:hover{ color:var(--ink); background:var(--fill); }
+  .navbtn:active{ transform:scale(.95); }
+  .navbtn[aria-current="page"]{ background:var(--accent-wash); color:var(--accent); border-color:transparent; }
+
+  .masthead-tools{ margin-left:auto; display:flex; align-items:center; gap:4px; }
+  .icon-btn{
+    width:36px; height:36px; display:grid; place-items:center; color:var(--ink-2);
+    border-radius:var(--r-pill);
+    transition:color var(--dur-s) var(--ease), background var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .icon-btn:hover{ color:var(--ink); background:var(--fill); }
+  .icon-btn:active{ transform:scale(.9); }
+  .icon-btn svg{ width:19px; height:19px; }
+  .icon-btn.is-on{ color:#fff; background:var(--accent); }
+
+  main{ flex:1; max-width:1180px; margin:0 auto; padding:0 var(--gutter) 90px; width:100%; }
+  .view{ animation:view-in var(--dur-m) var(--ease); }
+  @keyframes view-in{ from{ opacity:0; transform:translateY(10px) scale(.995);} to{ opacity:1; transform:none;} }
+
+  footer.sitefoot{
+    border-top:1px solid var(--hairline); padding:24px var(--gutter) 40px;
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    max-width:1180px; margin:0 auto; width:100%;
+  }
+  footer.sitefoot p{ font-size:var(--fs-cap); color:var(--ink-3); }
+
+  /* ================= BUTTONS & CONTROLS ================= */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    padding:11px 20px; border-radius:var(--r-pill); font-size:var(--fs-cap); font-weight:600;
+    letter-spacing:.005em; white-space:nowrap; border:1px solid transparent;
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease),
+      border-color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring), box-shadow var(--dur-s) var(--ease);
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn-primary{ background:var(--accent); color:#fff; box-shadow:0 2px 8px -2px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .btn-primary:hover{ background:var(--accent-2); }
+  .btn-outline{ background:var(--surface); border-color:var(--border); color:var(--ink); box-shadow:var(--shadow-1); }
+  .btn-outline:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+  .btn-tinted{ background:var(--accent-wash); color:var(--accent); }
+  .btn-tinted:hover{ background:color-mix(in srgb, var(--accent-wash) 70%, var(--accent) 12%); }
+  .btn-quiet{ color:var(--ink-2); }
+  .btn-quiet:hover{ color:var(--ink); background:var(--fill); }
+  .btn-danger{ background:var(--like-wash); color:var(--like); }
+  .btn-danger:hover{ background:color-mix(in srgb, var(--like-wash) 65%, var(--like) 16%); }
+  .btn-sm{ padding:8px 15px; }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; }
+
+  /* iOS filled input */
+  .field{ display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+  .field label{ font-size:var(--fs-cap); font-weight:600; color:var(--ink-2); }
+  .input,
+  .field input[type="text"],.field input[type="date"],.field input[type="password"],
+  .field textarea,.field select{
+    background:var(--fill); border:1px solid transparent; border-radius:var(--r-sm);
+    padding:12px 14px; color:var(--ink); width:100%;
+    transition:background var(--dur-s) var(--ease), border-color var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
+  }
+  .input::placeholder,.field input::placeholder,.field textarea::placeholder{ color:var(--ink-3); }
+  .input:focus,.field input:focus,.field textarea:focus,.field select:focus{
+    outline:none; background:var(--surface); border-color:var(--accent);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+  .field textarea{ font-family:var(--f-verse); font-size:var(--fs-read); line-height:1.7; resize:vertical; }
+  .field-hint{ font-size:var(--fs-micro); color:var(--ink-3); }
+  .field-row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .field-row .field{ flex:1; min-width:150px; }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; padding:8px 15px; border-radius:var(--r-pill);
+    font-size:var(--fs-cap); font-weight:600; background:var(--fill); color:var(--ink-2);
+    border:1px solid transparent;
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  button.chip:hover{ background:var(--fill-2); color:var(--ink); }
+  button.chip:active{ transform:scale(.95); }
+  .chip[aria-pressed="true"]{ background:var(--ink); color:var(--bg); }
+  .chip-form[aria-pressed="true"]{ background:var(--accent); color:#fff; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:var(--r-pill);
+    font-size:var(--fs-micro); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-wash); color:var(--accent);
+  }
+
+  /* ================= LIBRARY ================= */
+  .issue-head{ padding:52px 0 30px; }
+  .issue-head-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+  .issue-title{
+    font-family:var(--f-display); font-size:var(--fs-h1); font-weight:600; line-height:1.06;
+    letter-spacing:-.022em; text-wrap:balance; max-width:16ch;
+  }
+  .title-edit{
+    display:inline-flex; align-items:center; gap:6px; margin-left:10px; padding:6px 12px;
+    border-radius:var(--r-pill); background:var(--fill); color:var(--ink-2);
+    font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:600; vertical-align:middle;
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .title-edit:hover{ background:var(--fill-2); color:var(--ink); }
+  .title-edit:active{ transform:scale(.94); }
+  .title-edit svg{ width:13px; height:13px; }
+  .issue-byline{ font-size:var(--fs-read); color:var(--ink-2); margin-top:12px; max-width:48ch; line-height:1.6; }
+  .issue-count{ text-align:right; }
+  .issue-count .n{ font-family:var(--f-ui); font-size:2rem; font-weight:700; letter-spacing:-.02em; line-height:1; display:block; }
+
+  .toolbar{ display:flex; flex-direction:column; gap:14px; margin-bottom:22px; }
+  .searchbar{
+    display:flex; align-items:center; gap:10px; background:var(--fill); border-radius:var(--r-pill);
+    padding:11px 18px; transition:background var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
+  }
+  .searchbar:focus-within{ background:var(--surface); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent), var(--shadow-1); }
+  .searchbar svg{ width:16px; height:16px; color:var(--ink-3); flex-shrink:0; }
+  .searchbar input{ flex:1; background:none; border:none; padding:0; font-size:var(--fs-ui); }
+  .searchbar input:focus{ outline:none; }
+  .sort-select{
+    background:var(--fill); border:none; border-radius:var(--r-pill); color:var(--ink-2);
+    font-size:var(--fs-cap); font-weight:600; padding:9px 12px; cursor:pointer;
+  }
+  .filter-line{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .filter-line > .label{ flex-shrink:0; }
+  .filter-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+
+  .index-list{ display:flex; flex-direction:column; gap:14px; }
+  .entry{
+    display:grid; grid-template-columns:minmax(0,1fr) 168px; gap:28px; align-items:start;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:26px 28px; text-align:left; width:100%; box-shadow:var(--shadow-1);
+    position:relative; overflow:hidden;
+    transition:transform var(--dur-m) var(--spring), box-shadow var(--dur-m) var(--ease), border-color var(--dur-s) var(--ease);
+    animation:entry-in var(--dur-m) var(--ease) backwards;
+  }
+  @keyframes entry-in{ from{ opacity:0; transform:translateY(12px);} to{ opacity:1; transform:none;} }
+  .entry:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); border-color:var(--border); }
+  .entry:active{ transform:scale(.99); box-shadow:var(--shadow-1); }
+  .entry-main{ min-width:0; display:block; }
+  .entry-top{ display:flex; align-items:center; gap:10px; margin-bottom:11px; flex-wrap:wrap; }
+  .entry-num{ font-size:var(--fs-micro); font-weight:700; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+  .entry-title{
+    display:block; font-family:var(--f-display); font-size:clamp(1.45rem, 2.3vw, 1.9rem); font-weight:600;
+    line-height:1.22; letter-spacing:-.012em; margin-bottom:10px; text-wrap:balance;
+  }
+  .entry-blurb{
+    display:block; font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:56ch;
+  }
+  .entry-blurb.is-empty{ color:var(--ink-3); font-style:italic; }
+  .entry-side{ display:flex; flex-direction:column; align-items:flex-end; gap:11px; padding-top:2px; }
+  .entry-date{ display:block; font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); }
+  .entry-stats{ display:flex; gap:14px; }
+  .entry-stat{ display:flex; align-items:center; gap:5px; font-size:var(--fs-cap); font-weight:600; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+  .entry-stat svg{ width:15px; height:15px; }
+  .entry-stat.liked{ color:var(--like); }
+  .entry-tags{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .entry-tag{ font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); }
+  .entry-tag::before{ content:"·"; margin-right:6px; }
+  .entry-tag:first-child::before{ content:""; margin:0; }
+
+  .empty-state{ padding:80px 24px; text-align:center; background:var(--surface); border-radius:var(--r-lg); border:1px solid var(--hairline); }
+  .empty-state h3{ font-family:var(--f-display); font-size:var(--fs-h3); font-weight:600; margin-bottom:8px; }
+  .empty-state p{ color:var(--ink-2); }
+
+  /* ================= READER ================= */
+  .back-link{
+    display:inline-flex; align-items:center; gap:5px; margin:22px 0 20px; padding:8px 14px 8px 10px;
+    color:var(--accent); font-size:var(--fs-cap); font-weight:600; border-radius:var(--r-pill);
+    transition:background var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .back-link:hover{ background:var(--accent-wash); }
+  .back-link:active{ transform:scale(.95); }
+  .back-link svg{ width:16px; height:16px; }
+
+  .poem-head{ margin-bottom:26px; }
+  .poem-head-meta{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .poem-head-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .poem-title{
+    font-family:var(--f-display); font-size:clamp(2.1rem, 4.6vw, 3.4rem); font-weight:600;
+    line-height:1.1; letter-spacing:-.022em; text-wrap:balance; max-width:20ch;
+  }
+  .poem-blurb{
+    font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:56ch; margin-top:14px;
+  }
+  .poem-body-grid{ display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:26px; align-items:start; }
+  .poem-sheet{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-xl);
+    padding:clamp(30px, 4.4vw, 62px); box-shadow:var(--shadow-1);
+  }
+  .verse{
+    font-family:var(--poem-font, var(--f-verse));
+    font-size:calc(var(--poem-size, 1.2) * 1rem * var(--step));
+    line-height:var(--poem-leading, 1.85); white-space:pre-wrap;
+    text-align:var(--poem-align, left); color:var(--ink); max-width:46ch; margin:0 auto;
+  }
+
+  /* iOS inset grouped list */
+  .poem-rail{ position:sticky; top:80px; display:flex; flex-direction:column; gap:14px; }
+  .group{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-md); overflow:hidden; box-shadow:var(--shadow-1); }
+  .group-row{ padding:13px 16px; border-bottom:1px solid var(--hairline); }
+  .group-row:last-child{ border-bottom:none; }
+  .group-row .label{ display:block; margin-bottom:3px; }
+  .group-val{ font-size:var(--fs-read); font-weight:600; line-height:1.35; }
+  .group-val.serif{ font-family:var(--f-display); font-size:var(--fs-read); font-weight:600; }
+  .group-note{ font-size:var(--fs-cap); color:var(--ink-3); line-height:1.5; margin-top:2px; }
+
+  .engage{ display:flex; align-items:center; gap:12px; padding:24px 0 8px; flex-wrap:wrap; }
+  .like-btn{
+    display:inline-flex; align-items:center; gap:9px; padding:11px 20px; border-radius:var(--r-pill);
+    background:var(--fill); color:var(--ink-2); font-size:var(--fs-cap); font-weight:600;
+    font-variant-numeric:tabular-nums;
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .like-btn:hover{ background:var(--fill-2); color:var(--ink); }
+  .like-btn:active{ transform:scale(.95); }
+  .like-btn svg{ width:19px; height:19px; transition:transform var(--dur-s) var(--spring); }
+  .like-btn[aria-pressed="true"]{ background:var(--like-wash); color:var(--like); }
+  .like-btn.pulse svg{ animation:heart-pop 520ms var(--spring); }
+  @keyframes heart-pop{
+    0%{ transform:scale(1);} 30%{ transform:scale(1.45) rotate(-8deg);} 55%{ transform:scale(.88);}
+    75%{ transform:scale(1.12);} 100%{ transform:scale(1);}
+  }
+  .readonly-note{ font-size:var(--fs-cap); color:var(--ink-3); }
+
+  /* ================= COMMENTS ================= */
+  .comments{ padding:28px 0 8px; max-width:660px; }
+  .comments-head{ display:flex; align-items:center; gap:9px; margin-bottom:16px; }
+  .comments-head h3{ font-size:var(--fs-read); font-weight:700; }
+  .comments-count{
+    font-size:var(--fs-micro); font-weight:700; background:var(--fill); color:var(--ink-2);
+    padding:3px 9px; border-radius:var(--r-pill); font-variant-numeric:tabular-nums;
+  }
+  .comment-form{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:14px; margin-bottom:20px; box-shadow:var(--shadow-1);
+    transition:box-shadow var(--dur-s) var(--ease), border-color var(--dur-s) var(--ease);
+  }
+  .comment-form:focus-within{ border-color:var(--border); box-shadow:var(--shadow-2); }
+  .cf-name{
+    background:none; border:none; padding:2px 2px 10px; width:100%; font-weight:600; font-size:var(--fs-cap);
+    border-bottom:1px solid var(--hairline); margin-bottom:11px;
+  }
+  .cf-name:focus{ outline:none; border-bottom-color:var(--accent); }
+  .cf-name::placeholder{ color:var(--ink-3); font-weight:500; }
+  .cf-bottom{ display:flex; align-items:flex-end; gap:10px; }
+  .cf-text{
+    flex:1; background:none; border:none; padding:4px 2px; resize:none; min-height:26px; max-height:180px;
+    font-size:var(--fs-read); line-height:1.6;
+  }
+  .cf-text:focus{ outline:none; }
+  .cf-text::placeholder{ font-family:var(--f-ui); font-size:var(--fs-ui); color:var(--ink-3); }
+  .cf-send{
+    width:36px; height:36px; border-radius:var(--r-pill); background:var(--accent); color:#fff;
+    display:grid; place-items:center; flex-shrink:0;
+    transition:background var(--dur-s) var(--ease), transform var(--dur-s) var(--spring), opacity var(--dur-s) var(--ease);
+  }
+  .cf-send svg{ width:17px; height:17px; }
+  .cf-send:hover{ background:var(--accent-2); }
+  .cf-send:active{ transform:scale(.88); }
+  .cf-send[disabled]{ background:var(--fill-2); color:var(--ink-3); cursor:not-allowed; transform:none; }
+
+  .comment-list{ display:flex; flex-direction:column; gap:10px; }
+  .comment{
+    display:flex; gap:12px; padding:14px 16px; background:var(--surface);
+    border:1px solid var(--hairline); border-radius:var(--r-md);
+    animation:entry-in var(--dur-m) var(--ease);
+  }
+  .comment-avatar{
+    width:34px; height:34px; border-radius:var(--r-pill); flex-shrink:0; display:grid; place-items:center;
+    background:var(--accent-wash); color:var(--accent); font-weight:700; font-size:var(--fs-cap);
+  }
+  .comment-body{ flex:1; min-width:0; }
+  .comment-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:2px; flex-wrap:wrap; }
+  .comment-author{ font-weight:700; font-size:var(--fs-cap); }
+  .comment-time{ font-size:var(--fs-micro); color:var(--ink-3); }
+  .comment-text{ font-size:var(--fs-read); line-height:1.6; white-space:pre-wrap; color:var(--ink); }
+  .comment-del{ font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); margin-top:7px; }
+  .comment-del:hover{ color:var(--like); }
+  .comments-empty{ padding:22px; text-align:center; color:var(--ink-3); font-size:var(--fs-cap); background:var(--fill); border-radius:var(--r-md); }
+
+  /* ================= READING NOTES ================= */
+  .notes-toggle{ padding:18px 0 40px; }
+  .notes{ animation:view-in var(--dur-m) var(--ease); padding-top:8px; }
+  .notes-masthead{ margin-bottom:22px; }
+  .notes-masthead h2{ font-family:var(--f-display); font-size:var(--fs-h2); font-weight:600; letter-spacing:-.018em; line-height:1.14; margin-top:8px; }
+  .notes-standfirst{ font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:52ch; margin-top:8px; }
+
+  .note-sec{
+    display:grid; grid-template-columns:158px minmax(0,1fr); gap:26px; align-items:start;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:26px 28px; margin-bottom:14px; box-shadow:var(--shadow-1);
+  }
+  .note-sec-label{ position:sticky; top:82px; }
+  .note-sec-label .label{ display:block; }
+  .note-figure{ font-family:var(--f-ui); font-size:1.75rem; font-weight:700; letter-spacing:-.02em; line-height:1.05; margin-top:8px; }
+  .note-figure-unit{ display:block; font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); margin-top:4px; letter-spacing:0; text-transform:none; }
+  .note-body{ max-width:62ch; }
+  .note-body p{ font-size:var(--fs-read); line-height:1.72; color:var(--ink); }
+  .note-body p + p{ margin-top:12px; }
+  .note-body em{ font-family:var(--f-verse); font-style:italic; }
+  .note-body b{ font-weight:700; }
+  .quote{
+    font-family:var(--f-verse); font-size:var(--fs-read); line-height:1.7; color:var(--ink);
+    background:var(--fill); border-radius:var(--r-md); padding:14px 18px; margin:14px 0; white-space:pre-line;
+    border-left:3px solid var(--accent);
+  }
+  .quote-src{ display:block; font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); margin-top:8px; white-space:normal; }
+
+  .lexicon{ display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 14px; align-items:center; }
+  .lex-word{
+    font-family:var(--f-verse); color:var(--ink); line-height:1.2; background:var(--fill);
+    padding:7px 13px; border-radius:var(--r-pill); display:inline-flex; align-items:baseline; gap:5px;
+    transition:transform var(--dur-s) var(--spring), background var(--dur-s) var(--ease);
+  }
+  .lex-word:hover{ transform:translateY(-2px); background:var(--fill-2); }
+  .lex-word .c{ font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:700; color:var(--ink-3); }
+  .lex-1{ font-size:1.32rem; font-weight:600; background:var(--accent-wash); color:var(--accent); }
+  .lex-1 .c{ color:var(--accent); opacity:.7; }
+  .lex-2{ font-size:1.14rem; font-weight:500; }
+  .lex-3{ font-size:1rem; }
+  .lex-4{ font-size:.92rem; color:var(--ink-2); }
+
+  .field-bars{ display:flex; flex-direction:column; gap:9px; margin-top:12px; }
+  .field-bar{ display:grid; grid-template-columns:116px minmax(0,1fr) 28px; gap:12px; align-items:center; }
+  .field-bar .fname{ font-size:var(--fs-cap); font-weight:600; color:var(--ink-2); }
+  .field-bar .ftrack{ height:7px; background:var(--fill); border-radius:var(--r-pill); overflow:hidden; }
+  .field-bar .ffill{ display:block; height:100%; border-radius:var(--r-pill); background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width var(--dur-m) var(--ease); }
+  .field-bar .fcount{ font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); text-align:right; font-variant-numeric:tabular-nums; }
+
+  .caveat{
+    font-size:var(--fs-cap); color:var(--ink-3); line-height:1.65; background:var(--fill);
+    border-radius:var(--r-md); padding:16px 20px; margin-top:16px; max-width:66ch;
+  }
+
+  /* ================= COLLECTION ================= */
+  .coll-head{ padding:52px 0 26px; }
+  .coll-title{ font-family:var(--f-display); font-size:var(--fs-h1); font-weight:600; line-height:1.06; letter-spacing:-.022em; max-width:16ch; margin-top:8px; }
+  .coll-standfirst{ font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:54ch; margin-top:12px; }
+
+  .coll-figures{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  .coll-fig{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg); padding:20px 22px; box-shadow:var(--shadow-1);
+    transition:transform var(--dur-m) var(--spring), box-shadow var(--dur-m) var(--ease); }
+  .coll-fig:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); }
+  .coll-fig .n{ font-family:var(--f-ui); font-size:1.95rem; font-weight:700; letter-spacing:-.025em; line-height:1; display:block; }
+  .coll-fig .label{ display:block; margin-top:8px; }
+
+  .coll-sec{
+    display:grid; grid-template-columns:158px minmax(0,1fr); gap:26px; align-items:start;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:26px 28px; margin-bottom:14px; box-shadow:var(--shadow-1);
+  }
+  .coll-sec-label{ position:sticky; top:82px; }
+  .coll-sec-body > p{ font-size:var(--fs-read); line-height:1.72; max-width:60ch; }
+  .coll-sec-body > p + p{ margin-top:12px; }
+
+  .form-list{ display:flex; flex-direction:column; }
+  .form-row{ display:grid; grid-template-columns:130px minmax(0,1fr) 34px; gap:14px; align-items:center; padding:11px 0; border-bottom:1px solid var(--hairline); }
+  .form-row:last-child{ border-bottom:none; }
+  .form-row .fname{ font-family:var(--f-ui); font-size:var(--fs-read); font-weight:600; }
+  .form-row .ftrack{ height:7px; background:var(--fill); border-radius:var(--r-pill); overflow:hidden; }
+  .form-row .ffill{ display:block; height:100%; border-radius:var(--r-pill); background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .form-row .fcount{ text-align:right; font-size:var(--fs-cap); font-weight:700; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+
+  .trend-pair{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  .trend{ background:var(--fill); border-radius:var(--r-md); padding:16px 18px; }
+  .trend .label{ display:block; margin-bottom:10px; }
+  .trend svg{ width:100%; height:auto; overflow:visible; }
+  .trend .tline{ fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .trend .tarea{ fill:var(--accent); opacity:.09; }
+  .trend .tdot{ fill:var(--surface); stroke:var(--accent); stroke-width:2; }
+  .trend .tdot.end{ fill:var(--like); stroke:var(--like); }
+  .trend .tbase{ stroke:var(--hairline); stroke-width:1; }
+  .trend text{ fill:var(--ink-3); font-family:var(--f-ui); font-size:8.5px; font-weight:600; }
+  .trend-read{ font-size:var(--fs-cap); color:var(--ink-2); margin-top:8px; line-height:1.5; }
+
+  .lex-collection{ display:flex; flex-direction:column; }
+  .lex-row{ display:grid; grid-template-columns:150px minmax(0,1fr); gap:18px; align-items:center; padding:12px 0; border-bottom:1px solid var(--hairline); }
+  .lex-row:last-child{ border-bottom:none; }
+  .lex-row .w{ font-family:var(--f-verse); font-size:1.1rem; font-weight:600; }
+  .lex-row .w .c{ font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:700; color:var(--ink-3); margin-left:6px; }
+  .lex-row .where{ font-size:var(--fs-cap); color:var(--ink-3); line-height:1.5; }
+
+  /* ================= OVERLAYS ================= */
+  .scrim{
+    position:fixed; inset:0; background:rgba(10,11,14,.42);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center; padding:22px; z-index:100;
+    animation:fade-in var(--dur-s) var(--ease);
+  }
+  @keyframes fade-in{ from{opacity:0} to{opacity:1} }
+  .modal{
+    background:var(--bg); max-width:600px; width:100%; max-height:88vh; overflow-y:auto;
+    padding:28px 28px 24px; border-radius:var(--r-xl); box-shadow:var(--shadow-3);
+    animation:sheet-in var(--dur-m) var(--spring);
+  }
+  @keyframes sheet-in{ from{ opacity:0; transform:translateY(24px) scale(.97);} to{ opacity:1; transform:none;} }
+  .modal h2{ font-family:var(--f-display); font-size:var(--fs-h3); font-weight:600; letter-spacing:-.015em; line-height:1.2; margin-bottom:8px; }
+  .modal-sub{ color:var(--ink-2); font-size:var(--fs-cap); line-height:1.6; margin-bottom:22px; max-width:52ch; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:9px; margin-top:14px; }
+  .modal-wrap{ position:relative; }
+
+  /* --- PIN pad ---------------------------------------------------------
+     Sized for someone who does not want to squint or aim. Every key is a
+     comfortable target, the digits are large, and the whole thing works from
+     a physical keyboard too. */
+  .pin-dots{
+    display:flex; justify-content:center; gap:12px; margin:4px 0 20px; min-height:20px;
+  }
+  .pin-dot{
+    width:14px; height:14px; border-radius:50%; border:2px solid var(--ink-3);
+    transition:background var(--dur-s) ease, transform var(--dur-s) var(--spring), border-color var(--dur-s) ease;
+  }
+  .pin-dot.is-filled{ background:var(--accent); border-color:var(--accent); transform:scale(1.12); }
+  .pin-pad{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:6px;
+  }
+  .pin-key{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    min-height:64px; border-radius:var(--r-lg);
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    font-family:var(--f-ui); font-size:1.6rem; font-weight:500; font-variant-numeric:tabular-nums;
+    box-shadow:var(--shadow-1);
+    transition:background var(--dur-s) ease, transform var(--dur-s) var(--spring), border-color var(--dur-s) ease;
+  }
+  .pin-key:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+  .pin-key:active{ transform:scale(.95); background:var(--accent-wash); border-color:var(--accent); }
+  .pin-key:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .pin-key.is-quiet{ font-size:var(--fs-cap); font-weight:600; color:var(--ink-2); box-shadow:none; background:transparent; border-color:transparent; }
+  .pin-key.is-quiet:hover{ background:var(--surface-2); }
+  .pin-key[disabled]{ opacity:.35; cursor:default; transform:none; }
+  .pin-error{ color:var(--like); font-size:var(--fs-cap); line-height:1.5; min-height:1.5em; margin-bottom:10px; text-align:center; }
+  .pin-note{ color:var(--ink-3); font-size:var(--fs-micro); text-align:center; margin-top:14px; line-height:1.6; }
+  .linkish{
+    background:none; border:0; padding:0; cursor:pointer; color:var(--accent);
+    font:inherit; text-decoration:underline; text-underline-offset:2px;
+  }
+  .linkish:hover{ color:var(--accent-2); }
+  @media (prefers-reduced-motion: reduce){
+    .pin-dot, .pin-key{ transition:none; }
+    .pin-key:active{ transform:none; }
+  }
+
+  .popover{
+    position:absolute; top:100%; right:0; margin-top:9px; background:var(--surface);
+    border:1px solid var(--hairline); padding:8px; width:296px; z-index:90;
+    border-radius:var(--r-lg); box-shadow:var(--shadow-3);
+    animation:sheet-in var(--dur-s) var(--spring); transform-origin:top right;
+  }
+  .popover > .label{ display:block; padding:8px 10px 6px; }
+  .a11y-row{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 10px; border-radius:var(--r-sm); }
+  .a11y-row + .a11y-row{ border-top:1px solid var(--hairline); }
+  .a11y-row-label{ font-size:var(--fs-cap); font-weight:600; }
+  .a11y-row-desc{ font-size:var(--fs-micro); color:var(--ink-3); }
+  .stepper{ display:flex; align-items:center; background:var(--fill); border-radius:var(--r-pill); padding:2px; }
+  .stepper button{ width:30px; height:28px; display:grid; place-items:center; border-radius:var(--r-pill); color:var(--ink-2); font-weight:600;
+    transition:background var(--dur-s) var(--ease), transform var(--dur-s) var(--spring); }
+  .stepper button:hover{ background:var(--surface); color:var(--ink); }
+  .stepper button:active{ transform:scale(.9); }
+  .stepper span{ min-width:44px; text-align:center; font-size:var(--fs-micro); font-weight:700; font-variant-numeric:tabular-nums; }
+
+  /* iOS toggle */
+  .switch{
+    width:46px; height:28px; border-radius:var(--r-pill); background:var(--fill-2);
+    position:relative; flex-shrink:0; transition:background var(--dur-m) var(--ease);
+  }
+  .switch::after{
+    content:""; position:absolute; top:2px; left:2px; width:24px; height:24px; border-radius:var(--r-pill);
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28);
+    transition:transform var(--dur-m) var(--spring);
+  }
+  .switch[aria-checked="true"]{ background:var(--accent); }
+  .switch[aria-checked="true"]::after{ transform:translateX(18px); }
+
+  .toast-stack{ position:fixed; bottom:26px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; z-index:200; align-items:center; }
+  .toast{
+    background:color-mix(in srgb, var(--ink) 92%, transparent); color:var(--bg);
+    padding:12px 22px; border-radius:var(--r-pill); font-size:var(--fs-cap); font-weight:600;
+    box-shadow:var(--shadow-3); backdrop-filter:blur(12px);
+    animation:toast-in var(--dur-m) var(--spring);
+  }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(16px) scale(.94);} to{ opacity:1; transform:none;} }
+
+  .style-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .align-opt{ min-width:56px; padding:8px 14px; border-radius:var(--r-pill); background:var(--fill); font-size:var(--fs-cap); font-weight:600; color:var(--ink-2);
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring); }
+  .align-opt:active{ transform:scale(.95); }
+  .align-opt[aria-pressed="true"]{ background:var(--accent); color:#fff; }
+  .preview-sheet{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-md); padding:18px 20px; }
+  /* ---------- author highlights ---------- */
+  mark.hl{
+    color:inherit; border-radius:7px; padding:.06em .24em; margin:0 -.06em;
+    background-color:transparent;
+    background-image:linear-gradient(
+      color-mix(in srgb, var(--tint,var(--accent)) 22%, transparent),
+      color-mix(in srgb, var(--tint,var(--accent)) 22%, transparent));
+    background-repeat:no-repeat; background-size:100% 100%;
+    box-decoration-break:clone; -webkit-box-decoration-break:clone;
+    animation:hl-sweep 520ms var(--ease) backwards; animation-delay:var(--d,0ms);
+  }
+  @keyframes hl-sweep{ from{ background-size:0% 100%; } to{ background-size:100% 100%; } }
+  :root[data-contrast="high"] mark.hl{
+    background-image:none;
+    background-color:color-mix(in srgb, var(--tint,var(--accent)) 30%, transparent);
+    box-shadow:inset 0 -2px 0 var(--tint,var(--accent));
+    animation:none;
+  }
+
+  .hl-toggle{
+    display:inline-flex; align-items:center; gap:9px; padding:11px 18px; border-radius:var(--r-pill);
+    background:var(--fill); color:var(--ink-2); font-size:var(--fs-cap); font-weight:600;
+    transition:background var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--spring);
+  }
+  .hl-toggle:hover{ background:var(--fill-2); color:var(--ink); }
+  .hl-toggle:active{ transform:scale(.95); }
+  .hl-toggle svg{ width:17px; height:17px; }
+  .hl-toggle[aria-pressed="true"]{ background:color-mix(in srgb, var(--tint,var(--accent)) 16%, transparent); color:var(--tint,var(--accent)); }
+  .hl-count{
+    font-size:var(--fs-micro); font-weight:700; background:var(--fill-2); color:var(--ink-3);
+    padding:2px 8px; border-radius:var(--r-pill); font-variant-numeric:tabular-nums;
+  }
+  .hl-toggle[aria-pressed="true"] .hl-count{ background:color-mix(in srgb, var(--tint,var(--accent)) 22%, transparent); color:inherit; }
+
+  /* ---------- highlight picker ---------- */
+  .picker-modal{ max-width:760px; }
+  .picker-stage{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:26px 28px; margin-bottom:14px; max-height:46vh; overflow-y:auto;
+    -webkit-user-select:none; user-select:none; touch-action:pan-y;
+  }
+  .picker-verse{
+    font-family:var(--f-verse); font-size:var(--fs-verse); line-height:2; white-space:pre-wrap; color:var(--ink);
+  }
+  .wtok{
+    cursor:pointer; border-radius:7px; padding:.1em .2em; margin:0 -.2em;
+    box-decoration-break:clone; -webkit-box-decoration-break:clone;
+    transition:background-color var(--dur-s) var(--ease), color var(--dur-s) var(--ease);
+  }
+  .wtok:hover{ background-color:var(--fill-2); }
+  .wtok.on{ background-color:color-mix(in srgb, var(--tint,var(--accent)) 26%, transparent); }
+  .wtok.on:hover{ background-color:color-mix(in srgb, var(--tint,var(--accent)) 36%, transparent); }
+  .picker-bar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .picker-bar .spacer{ flex:1; }
+  .picker-hint{ font-size:var(--fs-cap); color:var(--ink-3); }
+  .picker-suggest{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+
+  .swatch{
+    width:28px; height:28px; border-radius:var(--r-pill); box-shadow:inset 0 0 0 2px var(--surface);
+    outline:2px solid transparent; outline-offset:2px;
+    transition:transform var(--dur-s) var(--spring), outline-color var(--dur-s) var(--ease);
+  }
+  .swatch:active{ transform:scale(.88); }
+  .swatch[aria-pressed="true"]{ outline-color:var(--ink); }
+  .accent-dot{ width:9px; height:9px; border-radius:var(--r-pill); background:var(--dot,var(--accent)); flex-shrink:0; }
+  .badge-tinted{ background:color-mix(in srgb, var(--dot,var(--accent)) 15%, transparent); color:var(--dot,var(--accent)); }
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:1000px){
+    .poem-body-grid{ grid-template-columns:minmax(0,1fr); }
+    .poem-rail{ position:static; flex-direction:row; flex-wrap:wrap; }
+    .poem-rail .group{ flex:1; min-width:200px; }
+    .trend-pair{ grid-template-columns:minmax(0,1fr); }
+    .coll-figures{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:520px){
+    .verse{ font-size:calc(var(--poem-size,1.2) * .92rem * var(--step)); }
+  }
+  @media (max-width:760px){
+    .entry{ grid-template-columns:minmax(0,1fr); gap:16px; padding:22px; }
+    .entry-side{ align-items:flex-start; flex-direction:row; flex-wrap:wrap; gap:12px 18px; }
+    .entry-tags{ justify-content:flex-start; }
+    .note-sec,.coll-sec{ grid-template-columns:minmax(0,1fr); gap:14px; padding:22px; }
+    .note-sec-label,.coll-sec-label{ position:static; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+    .note-figure{ margin-top:0; font-size:1.25rem; }
+    .note-figure-unit{ display:inline; margin:0 0 0 5px; }
+    .masthead-inner{ flex-wrap:wrap; gap:10px 16px; padding:10px var(--gutter); }
+    .navbtns{ order:3; width:100%; margin-left:0; }
+    .navbtn{ flex:1; text-align:center; }
+    .masthead-tools{ order:2; }
+    .brand-byline{ display:none; }
+    .lex-row{ grid-template-columns:minmax(0,1fr); gap:3px; }
+    .scrim{ padding:0; align-items:flex-end; }
+    .modal{ max-height:92vh; border-radius:var(--r-xl) var(--r-xl) 0 0; animation:sheet-up var(--dur-m) var(--ease); }
+    @keyframes sheet-up{ from{ transform:translateY(100%);} to{ transform:none;} }
+  }
+</style>
+
+<div id="app">
+  <header class="masthead"><div class="masthead-inner" id="masthead-inner"></div></header>
+  <main id="main-view"></main>
+  <footer class="sitefoot" id="sitefoot"></footer>
+</div>
+
+<div id="overlay-root"><div id="modal-root"></div><div class="toast-stack" id="toast-stack"></div></div>
+
+<script type="application/json" id="app-data"></script>
+
+<script id="app-script">
+(function(){
+"use strict";
+/* ============ APP SCRIPT BEGIN ============ */
+
+/* ---------------- icons ---------------- */
+var I_SEARCH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+var I_AA='<svg viewBox="0 0 24 24" aria-hidden="true"><text x="1" y="18" font-family="Georgia,serif" font-size="17" fill="currentColor">Aa</text></svg>';
+var I_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.3M12 19.1v2.3M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.6 12h2.3M19.1 12h2.3M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>';
+var I_LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10.5" width="14" height="9.5" rx="1"/><path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1"/></svg>';
+var I_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 18.5L8 12l6.5-6.5"/></svg>';
+var HEART_D='M12 20.6c-.3 0-.6-.1-.8-.3C7 16.9 2.6 13.2 2.6 9.1 2.6 6.3 4.7 4.2 7.3 4.2c1.9 0 3.5 1.1 4.7 2.7 1.2-1.6 2.8-2.7 4.7-2.7 2.6 0 4.7 2.1 4.7 4.9 0 4.1-4.4 7.8-8.6 11.2-.2.2-.5.3-.8.3z';
+function heartIcon(filled){
+  return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="'+HEART_D+'"/></svg>';
+}
+var I_HEART=heartIcon(false);
+var I_TALK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20.5 11.4a8 8 0 0 1-11.1 7.4L3.5 20.5l1.7-5.7a8 8 0 1 1 15.3-3.4z"/></svg>';
+var I_PENCIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+var I_MARKER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16"/><path d="M8.5 16.2l-3.3.7.7-3.3 8.4-8.4a1.7 1.7 0 0 1 2.4 0l.2.2a1.7 1.7 0 0 1 0 2.4z"/></svg>';
+var I_SEND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>';
+
+/* ---------------- function words (never counted as key words) ---------------- */
+var HARD_STOP={};
+("a,an,the,and,but,or,nor,for,so,yet,of,in,on,at,to,from,by,with,about,against,between,among,into,through,"+
+ "across,behind,beyond,beneath,below,above,under,over,upon,within,without,toward,towards,onto,off,out,up,down,"+
+ "during,before,after,while,until,till,since,than,then,as,if,because,though,although,unless,whether,whereas,"+
+ "i,me,my,mine,myself,we,us,our,ours,ourselves,you,your,yours,yourself,yourselves,he,him,his,himself,"+
+ "she,her,hers,herself,it,its,itself,they,them,their,theirs,themselves,who,whom,whose,which,what,that,this,"+
+ "these,those,there,here,where,when,why,how,am,is,are,was,were,be,been,being,have,has,had,having,do,does,"+
+ "did,doing,done,will,would,shall,should,can,could,may,might,must,ought,let,lets,not,no,nor,none,neither,"+
+ "either,both,each,every,all,any,some,such,other,another,others,more,most,less,least,much,many,few,fewer,"+
+ "several,own,same,very,too,also,just,only,even,still,again,ever,never,always,once,now,soon,already,almost,"+
+ "quite,rather,really,perhaps,maybe,indeed,thus,hence,however,therefore,meanwhile,anyway,instead,"+
+ "one,two,three,four,five,six,seven,eight,nine,ten,first,second,third,next,last,per,via,vs,ok,okay,"+
+ "s,t,d,ll,re,ve,m,don,doesn,didn,isn,aren,wasn,weren,hasn,haven,hadn,won,wouldn,couldn,shouldn,ain,"+
+ "am,im,ive,id,youre,youve,hes,shes,theyre,weve,thats,its,dont,cant,wont,didnt,doesnt,isnt,arent"
+).split(",").forEach(function(w){ HARD_STOP[w]=1; });
+
+/* frequent but low-image words — allowed through, ranked down */
+var LIGHT_WORD={};
+("back,away,around,along,ahead,aside,apart,together,anymore,everywhere,somewhere,nowhere,else,enough,"+
+ "inside,outside,upstairs,downstairs,thing,things,something,nothing,anything,everything,someone,anyone,everyone,nobody,somebody,way,ways,"+
+ "lot,kind,sort,bit,part,place,thought,thoughts,say,says,said,saying,get,gets,got,getting,go,goes,going,"+
+ "went,gone,come,comes,coming,came,make,makes,making,made,take,takes,taking,took,taken,put,puts,"+
+ "want,wants,wanted,seem,seems,seemed,use,used,using,need,needs,needed,try,tries,tried,trying,"+
+ "good,bad,big,little,long,short,new,right,wrong,sure,fine,nice,real,true,able,better,best,worse,"+
+ "like,likes,liked,ask,asks,asked,asking,tell,tells,told,telling,call,calls,called,calling,mean,means,meant"
+).split(",").forEach(function(w){ LIGHT_WORD[w]=1; });
+
+/* ---------------- image fields ---------------- */
+var IMAGE_FIELDS=[
+  {key:"light", name:"Light & shadow", words:"light,lights,lit,bright,brightness,shine,shines,shining,shone,glow,glowing,gleam,gleaming,glint,glimmer,shimmer,sparkle,flicker,flickering,flame,flames,burn,burning,blaze,dark,darkness,darkening,dim,dusk,shade,shadow,shadows,gray,grey,gold,golden,silver,white,black,red,blue,green,amber,pale,bleach,bleached,glare,beam,beams,ray,rays,lamp,candle,sun,sunlight,moonlight,star,stars,dawn,daylight"},
+  {key:"sky", name:"Sky & weather", words:"sky,skies,cloud,clouds,cloudy,rain,rains,raining,rained,storm,storms,stormy,thunder,lightning,wind,winds,windy,breeze,snow,snowing,frost,frozen,ice,icy,fog,mist,misty,hail,sun,moon,horizon,air,weather,gust,drizzle,overcast,heat,cold,chill,chilly,warm,warmth,thaw"},
+  {key:"earth", name:"Earth & growing", words:"tree,trees,leaf,leaves,branch,branches,root,roots,grass,garden,gardens,flower,flowers,bloom,blooms,blooming,blossom,seed,seeds,soil,dirt,ground,earth,field,fields,wood,woods,forest,maple,oak,pine,birch,vine,moss,weed,weeds,green,grow,grows,growing,grew,grown,harvest,crop,orchard,stem,bud,buds,petal,petals,bark,hedge,lawn,mow,mowing,mowed,ripe,ripen,rot,rotting"},
+  {key:"water", name:"Water", words:"water,waters,sea,ocean,wave,waves,river,rivers,stream,streams,creek,lake,pond,rain,tide,tides,flood,flooded,drip,dripping,drop,drops,pour,pours,poured,pouring,spill,spilled,wash,washed,washing,swim,swimming,swam,wet,damp,soak,soaked,steam,steaming,kettle,current,shore,shoreline,depth,deep,drown,drowning,puddle,mud"},
+  {key:"time", name:"Time & season", words:"year,years,month,months,week,weeks,day,days,night,nights,hour,hours,minute,minutes,moment,moments,morning,mornings,afternoon,evening,evenings,noon,midnight,today,tomorrow,yesterday,spring,summer,autumn,fall,winter,season,seasons,clock,clocks,watch,calendar,age,aging,young,younger,youth,old,older,early,late,later,forever,past,future,ancient,eternal"},
+  {key:"body", name:"The body", words:"hand,hands,finger,fingers,palm,palms,arm,arms,eye,eyes,face,faces,mouth,lip,lips,tooth,teeth,hair,head,heads,heart,hearts,chest,breath,breathe,breathing,breathed,skin,bone,bones,blood,knee,knees,foot,feet,leg,legs,shoulder,shoulders,back,neck,throat,voice,voices,touch,touched,touching,ache,aches,aching,tired,weary,sleep,sleeping,slept,wake,waking,woke,awake,pulse,belly,spine,wrist,thumb"},
+  {key:"house", name:"House & making", words:"house,houses,home,homes,room,rooms,door,doors,window,windows,floor,floors,wall,walls,roof,ceiling,stair,stairs,kitchen,table,tables,chair,chairs,bed,beds,porch,garage,attic,basement,yard,fence,gate,key,keys,lamp,cup,cups,coffee,bread,plate,dish,dishes,tool,tools,wrench,wrenches,hammer,nail,nails,screw,screwdriver,bolt,bolts,engine,machine,radio,car,truck,wood,board,boards,frame,build,built,building,fix,fixed,fixing,mend,mended,repair,paint,painted,drawer,shelf,shelves,pot,pan"},
+  {key:"sound", name:"Sound & silence", words:"sound,sounds,noise,noises,silence,silent,quiet,quietly,hush,hushed,loud,whisper,whispers,whispered,whispering,murmur,murmurs,hum,humming,buzz,rustle,rustling,creak,creaks,creaking,crack,cracks,ring,rings,ringing,roar,roaring,thunder,echo,echoes,echoing,song,songs,sing,sings,singing,sang,sung,music,note,notes,tune,cry,cries,cried,crying,laugh,laughs,laughing,laughter,shout,shouts,call,calls,called,calling,speak,speaks,spoke,spoken,tick,ticks,ticking,sigh,sighs,sighed,groan,groans,bell,bells,listen,listens,listened,listening,hear,hears,heard,hearing"},
+  {key:"motion", name:"Movement", words:"walk,walks,walked,walking,run,runs,ran,running,dance,dances,danced,dancing,fly,flies,flew,flying,fall,falls,fell,fallen,falling,drift,drifts,drifted,drifting,sway,sways,swayed,swaying,move,moves,moved,moving,rush,rushes,rushed,rushing,climb,climbs,climbed,climbing,turn,turns,turned,turning,spin,spins,spinning,shake,shakes,shaking,shook,tremble,trembles,trembling,rise,rises,rose,rising,risen,sink,sinks,sank,sinking,lean,leans,leaned,leaning,bend,bends,bent,bending,carry,carries,carried,carrying,push,pushed,pull,pulled,step,steps,stepped,stepping,wander,wandered,crawl,slip,slipped,swing,swung,curl,curls,curled,curling"},
+  {key:"kin", name:"Kin & people", words:"father,fathers,dad,mother,mothers,mom,son,sons,daughter,daughters,child,children,kid,kids,boy,boys,girl,girls,brother,brothers,sister,sisters,wife,husband,family,families,grandfather,grandmother,grandchild,parent,parents,friend,friends,neighbor,neighbors,man,men,woman,women,people,stranger,strangers,name,names,love,loved,loving,lover"},
+  {key:"loss", name:"Loss & memory", words:"memory,memories,remember,remembers,remembered,remembering,forget,forgets,forgot,forgotten,forgetting,lose,loses,lost,losing,loss,gone,leave,leaves,left,leaving,miss,missed,missing,grief,grieve,grieving,mourn,mourning,death,dead,die,dies,died,dying,grave,graves,buried,bury,ash,ashes,funeral,farewell,goodbye,absence,absent,empty,emptiness,alone,lonely,ghost,ghosts,keep,kept,keeping,hold,holds,held,holding,still,ago,used"}
+];
+var FIELD_LOOKUP={};
+IMAGE_FIELDS.forEach(function(f){ f.list=f.words.split(","); f.list.forEach(function(w){ if(!FIELD_LOOKUP[w]) FIELD_LOOKUP[w]=f.key; }); });
+
+/* ---------------- mode lexicons ---------------- */
+var ADDRESS_WORDS={you:1,your:1,yours:1,thou:1,thee:1,thy:1,thine:1,ye:1};
+var PRAISE_WORDS="praise,praised,glory,glorious,beauty,beautiful,honor,honour,bless,blessed,blessing,hail,celebrate,celebrated,wonder,wonderful,wondrous,thank,thanks,thankful,grateful,gratitude,splendid,splendor,magnificent,noble,humble,faithful,gift,gifts,marvel,marvelous,holy,sacred,sing,sings,praise,tribute,homage,ode,worthy,perfect,grace,graceful,dear,beloved,steadfast,patient,quiet,plain,simple,honest,sturdy,true".split(",");
+var GRIEF_WORDS="grief,grieve,grieving,mourn,mourning,mourned,death,dead,die,dies,died,dying,grave,graves,buried,bury,funeral,ashes,farewell,goodbye,widow,widower,loss,lost,gone,absence,absent,coffin,eulogy,memorial,departed,passing,passed".split(",");
+
+var POEM_FONTS=[
+  {id:'serif',label:'Serif',css:'var(--f-serif)'},
+  {id:'sans',label:'Sans',css:'var(--f-ui)'}
+];
+var FONT_ALIASES={mincho:'serif',display:'serif',hand:'serif',gothic:'sans'};
+function normalizeFont(id){ return FONT_ALIASES[id]||(POEM_FONTS.some(function(f){ return f.id===id; })?id:'sans'); }
+var ACCENT_SWATCHES=['#3B6FD4','#E08A2E','#2FA36B','#8B5CF6','#0EA5B7','#D9538F'];
+/* stable colour per form — the badge encodes category, not decoration */
+var FORM_COLORS={
+  'Ode':'#E08A2E', 'Elegy':'#8B5CF6', 'Ballad':'#2FA36B', 'Lyric':'#0EA5B7',
+  'Sonnet':'#D9538F', 'Haiku':'#0EA5B7', 'Tanka':'#0EA5B7', 'Villanelle':'#D9538F',
+  'Limerick':'#E08A2E', 'Catalogue':'#7C6BD6', 'Prose poem':'#7A8290',
+  'Blank verse':'#7A8290', 'Free verse':'#3B6FD4'
+};
+function formColor(f){ return FORM_COLORS[f]||'#3B6FD4'; }
+var COUNTABLE_FORMS=['Ode','Elegy','Ballad','Lyric','Sonnet','Haiku','Tanka','Villanelle','Limerick','Catalogue'];
+function formCountPhrase(form,n){
+  var low=form.toLowerCase();
+  if(COUNTABLE_FORMS.indexOf(form)>=0) return n+' '+low+(n===1?'':'s');
+  return n+' in '+low;
+}
+var STEP_VALUES=[0.9,1,1.15,1.3,1.5,1.7];
+
+/* ---------------- utilities ---------------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
+function round2(v){ return Math.round(v*100)/100; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function genId(){ return 'id'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function fmtDate(iso){ var d=new Date(iso+'T00:00:00'); return isNaN(d)?iso:d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+function fmtShort(iso){ var d=new Date(iso+'T00:00:00'); return isNaN(d)?iso:d.toLocaleDateString('en-US',{month:'short',year:'numeric'}); }
+function fmtTiny(iso){ var d=new Date(iso+'T00:00:00'); return isNaN(d)?iso:d.toLocaleDateString('en-US',{month:'short',year:'2-digit'}); }
+function timeAgo(iso){
+  var t=new Date(iso).getTime(); if(isNaN(t)) return '';
+  var m=Math.floor(Math.max(0,Date.now()-t)/60000);
+  if(m<1) return 'just now';
+  if(m<60) return m+' min ago';
+  var h=Math.floor(m/60); if(h<24) return h+' hr ago';
+  var d=Math.floor(h/24); if(d<30) return d+' days ago';
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function excerpt(body,n){
+  var lines=body.split(/\r?\n/).filter(function(l){ return l.trim()!==''; });
+  return lines.slice(0,n||4).join('\n');
+}
+function simpleHash(s){ var h=5381; for(var i=0;i<s.length;i++){ h=((h*33)^s.charCodeAt(i))>>>0; } return h.toString(36); }
+function listJoin(arr,conj){
+  conj=conj||'and';
+  if(!arr.length) return '';
+  if(arr.length===1) return arr[0];
+  if(arr.length===2) return arr[0]+' '+conj+' '+arr[1];
+  return arr.slice(0,-1).join(', ')+', '+conj+' '+arr[arr.length-1];
+}
+/* ================= AUTHOR HIGHLIGHTS ================= */
+var WORD_RE=/[A-Za-z0-9À-ɏ][A-Za-z0-9'’À-ɏ]*/g;
+/* Split a poem into word tokens (indexed) and the gaps between them. Gaps keep
+   newlines and punctuation, so re-joining reproduces the poem exactly. */
+function tokenizePoem(body){
+  var re=new RegExp(WORD_RE.source,'g'), toks=[], last=0, m, wi=0;
+  while((m=re.exec(body))!==null){
+    if(m.index>last) toks.push({t:'gap',s:body.slice(last,m.index)});
+    toks.push({t:'word',s:m[0],i:wi++});
+    last=m.index+m[0].length;
+  }
+  if(last<body.length) toks.push({t:'gap',s:body.slice(last)});
+  return toks;
+}
+function poemWords(body){
+  return tokenizePoem(body).filter(function(t){ return t.t==='word'; });
+}
+function highlightsOf(p){ return Array.isArray(p.highlights)?p.highlights:[]; }
+/* Indices of every occurrence of the given words (matched loosely, by stem). */
+function indicesForWords(body,words){
+  var want={};
+  words.forEach(function(w){
+    var k=String(w).toLowerCase().replace(/[^a-z0-9']/g,'');
+    if(k){ want[k]=1; want[stemOf(k)]=1; }
+  });
+  var out=[];
+  poemWords(body).forEach(function(t){
+    var k=t.s.toLowerCase();
+    if(want[k]||want[stemOf(k)]) out.push(t.i);
+  });
+  return out;
+}
+/* Keep highlights pointing at the same words after the poem text is edited. */
+function remapHighlights(oldBody,newBody,indices){
+  if(!indices||!indices.length) return [];
+  var oldW=poemWords(oldBody), newW=poemWords(newBody);
+  if(oldBody===newBody) return indices.slice();
+  var used={}, out=[];
+  indices.forEach(function(i){
+    var tok=oldW[i]; if(!tok) return;
+    var target=tok.s.toLowerCase();
+    for(var d=0;d<=newW.length;d++){
+      var cands=[i+d,i-d];
+      for(var c=0;c<cands.length;c++){
+        var j=cands[c];
+        if(j<0||j>=newW.length||used[j]) continue;
+        if(newW[j].s.toLowerCase()===target){ used[j]=1; out.push(j); return; }
+      }
+    }
+  });
+  return out.sort(function(a,b){ return a-b; });
+}
+/* Poem markup. mode 'read' wraps highlights in <mark>; 'pick' makes every word tappable. */
+function renderVerseHtml(body,indices,mode){
+  var set={}; (indices||[]).forEach(function(i){ set[i]=1; });
+  var n=0;
+  return tokenizePoem(body).map(function(tk){
+    if(tk.t==='gap') return esc(tk.s);
+    var on=!!set[tk.i];
+    if(mode==='pick'){
+      return '<span class="wtok'+(on?' on':'')+'" data-wi="'+tk.i+'" role="button" tabindex="0"'+
+        ' aria-pressed="'+on+'" aria-label="'+esc(tk.s)+'">'+esc(tk.s)+'</span>';
+    }
+    if(!on) return esc(tk.s);
+    return '<mark class="hl" style="--d:'+(n++*45)+'ms">'+esc(tk.s)+'</mark>';
+  }).join('');
+}
+
+function defaultPoemStyle(){ return {font:'serif',size:1.22,leading:1.85,align:'left',accent:'#3B6FD4'}; }
+function poemStyleVars(s){
+  var id=normalizeFont(s.font), css='var(--f-serif)';
+  POEM_FONTS.forEach(function(f){ if(f.id===id) css=f.css; });
+  return '--poem-font:'+css+';--poem-size:'+s.size+';--poem-leading:'+s.leading+';--poem-align:'+s.align+';';
+}
+
+/* ================= LANGUAGE ANALYSIS ================= */
+function tokenize(text){
+  var m=(text.toLowerCase().match(/[a-z][a-z']*/g))||[];
+  return m.map(function(w){ return w.replace(/^'+|'+$/g,''); }).filter(Boolean);
+}
+function getLines(body){ return body.split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); }
+function getStanzas(body){
+  return body.split(/\n\s*\n/).map(function(s){ return s.split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); })
+    .filter(function(st){ return st.length; });
+}
+var IRREGULAR={};
+("held:hold,holds:hold,holding:hold,told:tell,kept:keep,left:leave,felt:feel,made:make,went:go,gone:go,"+
+ "came:come,took:take,taken:take,gave:give,given:give,saw:see,seen:see,knew:know,known:know,grew:grow,"+
+ "grown:grow,rose:rise,risen:rise,fell:fall,fallen:fall,sang:sing,sung:sing,ran:run,sat:sit,stood:stand,"+
+ "found:find,lost:lose,sent:send,spent:spend,built:build,caught:catch,taught:teach,brought:bring,"+
+ "thought:think,bought:buy,wore:wear,worn:wear,broke:break,broken:break,spoke:speak,spoken:speak,"+
+ "wrote:write,written:write,drove:drive,driven:drive,chose:choose,froze:freeze,frozen:freeze,woke:wake,"+
+ "woken:wake,swore:swear,tore:tear,torn:tear,slept:sleep,wept:weep,crept:creep,swept:sweep,dug:dig,"+
+ "hung:hang,swung:swing,sank:sink,sunk:sink,drank:drink,drunk:drink,began:begin,begun:begin,"+
+ "children:child,men:man,women:woman,feet:foot,teeth:tooth,leaves:leaf,lives:life,knives:knife,"+
+ "wives:wife,selves:self,shelves:shelf,halves:half,loaves:loaf,thieves:thief"
+).split(",").forEach(function(pair){ var kv=pair.split(":"); IRREGULAR[kv[0]]=kv[1]; });
+
+function stemOf(w){
+  if(IRREGULAR[w]) return IRREGULAR[w];
+  var s=w;
+  if(s.length>4 && /ies$/.test(s)) s=s.slice(0,-3)+'y';
+  else if(s.length>4 && /(ses|xes|zes|ches|shes)$/.test(s)) s=s.slice(0,-2);
+  else if(s.length>3 && /s$/.test(s) && !/(ss|us|is)$/.test(s)) s=s.slice(0,-1);
+  if(s.length>5 && /ing$/.test(s)) s=s.slice(0,-3);
+  else if(s.length>4 && /ed$/.test(s)) s=s.slice(0,-2);
+  if(s.length>3 && /([bdfglmnprt])\1$/.test(s)) s=s.slice(0,-1);
+  if(s.length>3 && /e$/.test(s)) s=s.slice(0,-1);
+  return s||w;
+}
+function countSyllables(raw){
+  var w=raw.toLowerCase().replace(/[^a-z]/g,'');
+  if(!w) return 0;
+  if(w.length<=3) return 1;
+  w=w.replace(/(?:es|ed)$/,'').replace(/e$/,'');
+  var m=w.match(/[aeiouy]+/g);
+  return m?Math.max(1,m.length):1;
+}
+var VOWEL_NORM={ea:'e',ee:'e',ie:'e',ei:'e',ey:'e',ai:'a',ay:'a',oa:'o',ow:'o',oo:'u',au:'o',aw:'o',oy:'oi',ue:'u',ui:'u',y:'i',eau:'o'};
+/* rhyme core: last vowel nucleus + the consonants after it, normalised for spelling */
+function rhymeCore(raw){
+  var w=raw.toLowerCase().replace(/[^a-z]/g,'');
+  if(!w) return null;
+  /* silent -e, and the silent e of a regular -ed ending */
+  if(/[^aeiou]ed$/.test(w) && !/[td]ed$/.test(w)) w=w.slice(0,-2)+w.slice(-1);
+  else if(w.length>3 && /e$/.test(w) && !/[aeiou]e$/.test(w)) w=w.slice(0,-1);
+  var m=w.match(/([aeiouy]+)([^aeiouy]*)$/);
+  if(!m) return {v:w.slice(-2),c:''};
+  var v=m[1];
+  return { v:(VOWEL_NORM[v]||v.charAt(0)), c:m[2] };
+}
+function rhymeKey(raw){
+  var r=rhymeCore(raw);
+  return r?r.v+r.c:'';
+}
+/* true rhyme or close slant rhyme */
+function rhymesWith(a,b){
+  if(!a||!b) return false;
+  if(a.v!==b.v) return false;
+  if(a.c===b.c) return true;
+  if(!a.c||!b.c) return false;
+  return a.c.charAt(0)===b.c.charAt(0) && Math.abs(a.c.length-b.c.length)<=1;
+}
+function endWordCores(stanza){
+  return stanza.map(function(l){ var ws=tokenize(l); return ws.length?rhymeCore(ws[ws.length-1]):null; });
+}
+/* count how many line endings participate in a rhyme, using fuzzy matching */
+function rhymeStats(stanzas){
+  var rhymed=0,total=0;
+  stanzas.forEach(function(st){
+    var cores=endWordCores(st).filter(Boolean);
+    total+=cores.length;
+    var used=cores.map(function(){ return false; });
+    for(var i=0;i<cores.length;i++){
+      for(var j=i+1;j<cores.length;j++){
+        if(rhymesWith(cores[i],cores[j])){ used[i]=true; used[j]=true; }
+      }
+    }
+    used.forEach(function(u){ if(u) rhymed++; });
+  });
+  return { rhymed:rhymed, total:total, density: total?rhymed/total:0 };
+}
+var DIGRAPHS=['th','sh','ch','wh','ph','str','spr','scr','st','sp','sc','sk','sl','sm','sn','sw','tr','br','cr','dr','fr','gr','pr','gl','bl','cl','fl','pl'];
+function initialSound(w){
+  var s=w.toLowerCase().replace(/[^a-z]/g,'');
+  for(var i=0;i<DIGRAPHS.length;i++){ if(s.indexOf(DIGRAPHS[i])===0) return DIGRAPHS[i]; }
+  return s.charAt(0);
+}
+function vowelSound(w){
+  var s=w.toLowerCase().replace(/[^a-z]/g,'');
+  var m=s.match(/[aeiouy]+/);
+  return m?m[0]:'';
+}
+function mode(arr){
+  if(!arr.length) return 0;
+  var t={},best=arr[0],bc=0;
+  arr.forEach(function(v){ t[v]=(t[v]||0)+1; });
+  Object.keys(t).forEach(function(k){ if(t[k]>bc){ bc=t[k]; best=+k; } });
+  return best;
+}
+function schemeOf(stanza){
+  var cores=endWordCores(stanza);
+  var groups=[],out=[];
+  cores.forEach(function(c){
+    if(!c){ out.push('-'); return; }
+    var found=-1;
+    for(var i=0;i<groups.length;i++){ if(rhymesWith(groups[i],c)){ found=i; break; } }
+    if(found<0){ groups.push(c); found=groups.length-1; }
+    out.push(String.fromCharCode(65+found));
+  });
+  return out.join('');
+}
+
+/* key words: content words, stemmed, ranked by count and weight */
+function keyWords(body,limit){
+  var words=tokenize(body);
+  var groups={};
+  words.forEach(function(w){
+    if(HARD_STOP[w] || w.length<3) return;
+    var st=stemOf(w);
+    if(!groups[st]) groups[st]={stem:st,count:0,surfaces:{}};
+    groups[st].count++;
+    groups[st].surfaces[w]=(groups[st].surfaces[w]||0)+1;
+  });
+  var out=Object.keys(groups).map(function(st){
+    var g=groups[st];
+    var best='',bc=0;
+    Object.keys(g.surfaces).forEach(function(s){ if(g.surfaces[s]>bc || (g.surfaces[s]===bc && s.length<best.length)){ bc=g.surfaces[s]; best=s; } });
+    var light=!!(LIGHT_WORD[best]||LIGHT_WORD[st]);
+    return { word:best, stem:st, count:g.count, light:light, weight:g.count*(light?0.4:1)*(FIELD_LOOKUP[best]?1.15:1) };
+  });
+  out.sort(function(a,b){ return b.weight-a.weight || b.count-a.count || a.word.localeCompare(b.word); });
+  return limit ? out.slice(0,limit) : out;
+}
+
+function imageFieldCounts(body){
+  var words=tokenize(body);
+  var counts={},examples={};
+  IMAGE_FIELDS.forEach(function(f){ counts[f.key]=0; examples[f.key]={}; });
+  words.forEach(function(w){
+    var k=FIELD_LOOKUP[w];
+    if(k){ counts[k]++; examples[k][w]=(examples[k][w]||0)+1; }
+  });
+  return IMAGE_FIELDS.map(function(f){
+    var ex=Object.keys(examples[f.key]).sort(function(a,b){ return examples[f.key][b]-examples[f.key][a]; }).slice(0,4);
+    return { key:f.key, name:f.name, count:counts[f.key], examples:ex };
+  }).sort(function(a,b){ return b.count-a.count; });
+}
+
+/* ---------------- form classification ---------------- */
+function classifyForm(body,title){
+  var lines=getLines(body), stanzas=getStanzas(body), words=tokenize(body);
+  var n=lines.length, wc=words.length;
+  var syl=lines.map(function(l){ return tokenize(l).reduce(function(s,w){ return s+countSyllables(w); },0); });
+  var schemes=stanzas.map(schemeOf);
+  var sizes=stanzas.map(function(s){ return s.length; });
+  var uniform=sizes.length>1 && sizes.every(function(s){ return s===sizes[0]; });
+  var avgWordsPerLine=n?wc/n:0;
+
+  var rhymeDensity=rhymeStats(stanzas).density;
+  var pentameter=syl.filter(function(s){ return Math.abs(s-10)<=1; }).length;
+  var pentameterRatio=n?pentameter/n:0;
+
+  var starts={};
+  lines.forEach(function(l){ var ws=tokenize(l); if(ws[0]) starts[ws[0]]=(starts[ws[0]]||0)+1; });
+  var maxAnaphora=0,anaWord='';
+  Object.keys(starts).forEach(function(k){ if(starts[k]>maxAnaphora){ maxAnaphora=starts[k]; anaWord=k; } });
+
+  var addressHits=0; words.forEach(function(w){ if(ADDRESS_WORDS[w]) addressHits++; });
+  var addressRatio=wc?addressHits/wc:0;
+  var praiseHits={}; words.forEach(function(w){ if(PRAISE_WORDS.indexOf(w)>=0) praiseHits[w]=1; });
+  var praiseCount=Object.keys(praiseHits).length;
+  var griefHits={}; words.forEach(function(w){ if(GRIEF_WORDS.indexOf(w)>=0) griefHits[w]=1; });
+  var griefCount=Object.keys(griefHits).length;
+
+  var t=(title||'').trim();
+  var titleOde=/^ode\b/i.test(t) || /^to\s+(?:a|an|the|my|his|her|our|your)?\s*\S/i.test(t);
+  var titleElegy=/\belegy\b|\bin memoriam\b|\brequiem\b|\blament\b/i.test(t);
+
+  var structure;
+  if(!sizes.length) structure='a single passage';
+  else if(uniform){
+    var nameBySize={1:'single lines',2:'couplets',3:'tercets',4:'quatrains',5:'quintains',6:'sestets',8:'octaves'};
+    structure=(nameBySize[sizes[0]]||(sizes[0]+'-line stanzas'));
+    structure=sizes.length+' '+(sizes.length===1?structure.replace(/s$/,''):structure);
+  } else if(sizes.length===1) structure='one unbroken stanza of '+n+' lines';
+  else structure=sizes.length+' stanzas of uneven length ('+sizes.join('–')+' lines)';
+
+  function res(form,family,evidence){ return {form:form,family:family,structure:structure,evidence:evidence,
+    rhymeDensity:rhymeDensity, maxAnaphora:maxAnaphora, anaWord:anaWord, syllableMode:mode(syl),
+    avgWordsPerLine:avgWordsPerLine, schemes:schemes, uniform:uniform, stanzaSizes:sizes}; }
+
+  /* fixed forms first */
+  if(n===3 && syl.reduce(function(a,b){ return a+b; },0)<=20)
+    return res('Haiku','fixed','Three lines, '+syl.join('–')+' syllables — within the compass of haiku.');
+  if(n===5 && Math.abs(syl[0]-5)<=1 && Math.abs(syl[1]-7)<=1 && Math.abs(syl[2]-5)<=1)
+    return res('Tanka','fixed','Five lines running '+syl.join('–')+' syllables, close to the 5-7-5-7-7 of tanka.');
+  if(n===5 && schemes.length===1 && /^AABBA$/.test(schemes[0]))
+    return res('Limerick','fixed','Five lines rhyming AABBA.');
+  if(n===14 && rhymeDensity>0.3){
+    var kind=(schemes.join('')==='ABABCDCDEFEFGG')?'the Shakespearean pattern':'a sonnet pattern';
+    return res('Sonnet','fixed','Fourteen rhymed lines following '+kind+'.');
+  }
+  if(n===19 && stanzas.length===6)
+    return res('Villanelle','fixed','Nineteen lines in five tercets and a closing quatrain.');
+
+  /* modes */
+  if(titleOde) return res('Ode','mode','The title addresses its subject directly — the gesture of an ode: praise turned toward one thing.');
+  if(addressRatio>0.022 && praiseCount>=2)
+    return res('Ode','mode','It speaks to its subject throughout and reaches for praise ('+listJoin(Object.keys(praiseHits).slice(0,3).map(function(w){ return '“'+w+'”'; }))+') — an ode in everything but title.');
+  if(titleElegy || griefCount>=4)
+    return res('Elegy','mode','The vocabulary of loss runs through it ('+listJoin(Object.keys(griefHits).slice(0,3).map(function(w){ return '“'+w+'”'; }))+') — the poem is doing the work of an elegy.');
+  if(n>=6 && maxAnaphora>=Math.max(3,Math.round(n*0.4)))
+    return res('Catalogue','mode','“'+anaWord+'” opens '+maxAnaphora+' of the '+n+' lines — the poem accumulates by listing.');
+  if(avgWordsPerLine>=14 && n<=6)
+    return res('Prose poem','mode','Long unbroken lines averaging '+Math.round(avgWordsPerLine)+' words — the poem runs as prose does.');
+
+  /* structural fallbacks */
+  if(rhymeDensity>=0.45 && uniform && sizes[0]===4){
+    var sc=schemes[0]||'';
+    if(sc==='ABCB' || sc==='ABAB' || sc==='AABB')
+      return res('Ballad','structure','Rhymed quatrains ('+sc+') in the old ballad shape.');
+    return res('Lyric','structure','Rhymed quatrains, rhyming '+listJoin(schemes.slice(0,3))+'.');
+  }
+  if(rhymeDensity>=0.4)
+    return res('Lyric','structure','Rhyme carries roughly '+Math.round(rhymeDensity*100)+'% of the line endings, in '+structure+'.');
+  if(rhymeDensity<0.15 && pentameterRatio>=0.6 && n>=8)
+    return res('Blank verse','structure',Math.round(pentameterRatio*100)+'% of the lines hold near ten syllables, unrhymed — blank verse measure.');
+  return res('Free verse','structure','No fixed rhyme or measure; the poem sets its own line, in '+structure+'.');
+}
+
+/* ---------------- full analysis ---------------- */
+function analyzePoem(body,title){
+  var lines=getLines(body), stanzas=getStanzas(body), words=tokenize(body);
+  var wc=words.length;
+  var uniq={}; words.forEach(function(w){ uniq[w]=1; });
+  var uniqueCount=Object.keys(uniq).length;
+
+  var keys=keyWords(body);
+  var fields=imageFieldCounts(body);
+  var form=classifyForm(body,title);
+
+  /* repeated phrases from content-bearing pairs */
+  var bigrams={};
+  for(var i=0;i<words.length-1;i++){
+    var a=words[i],b=words[i+1];
+    if(HARD_STOP[a] && HARD_STOP[b]) continue;
+    var bg=a+' '+b;
+    bigrams[bg]=(bigrams[bg]||0)+1;
+  }
+  var repeatedPhrases=Object.keys(bigrams).filter(function(k){ return bigrams[k]>1; })
+    .map(function(k){ return {phrase:k,count:bigrams[k]}; })
+    .sort(function(a,b){ return b.count-a.count; }).slice(0,4);
+
+  /* alliteration with the actual sound and words */
+  var allit=[];
+  lines.forEach(function(l){
+    var ws=tokenize(l).filter(function(w){ return !HARD_STOP[w]; });
+    var sounds=ws.map(initialSound);
+    for(var j=0;j<sounds.length-1;j++){
+      if(sounds[j] && sounds[j]===sounds[j+1]){
+        allit.push({line:l.trim(), sound:sounds[j], words:[ws[j],ws[j+1]]});
+        break;
+      }
+    }
+  });
+
+  /* assonance: repeated vowel sounds among content words in a line */
+  var assonance=[];
+  lines.forEach(function(l){
+    var ws=tokenize(l).filter(function(w){ return !HARD_STOP[w] && w.length>2; });
+    var seen={};
+    for(var j=0;j<ws.length;j++){
+      var v=vowelSound(ws[j]);
+      if(!v) continue;
+      if(seen[v] && seen[v]!==ws[j]){ assonance.push({line:l.trim(),vowel:v,words:[seen[v],ws[j]]}); break; }
+      seen[v]=ws[j];
+    }
+  });
+
+  /* line endings */
+  var stopped=lines.filter(function(l){ return /[.,;:!?—–-]\s*$/.test(l.trim()); }).length;
+  var enjambRatio=lines.length?1-(stopped/lines.length):0;
+  var enjambExamples=[];
+  for(var k=0;k<lines.length-1;k++){
+    if(!/[.,;:!?—–-]\s*$/.test(lines[k].trim())){
+      enjambExamples.push(lines[k].trim()+'\n'+lines[k+1].trim());
+      if(enjambExamples.length>=2) break;
+    }
+  }
+
+  /* figurative language */
+  var similes=[];
+  var simRe=/([A-Za-z',\s]{3,40}?)\b(like|as)\b\s+((?:a|an|the|my|his|her|its|their)\s+)?([A-Za-z']+(?:\s+[A-Za-z']+){0,3})/g;
+  var mm;
+  while((mm=simRe.exec(body))!==null && similes.length<4){
+    var lead=mm[1].trim().split(/\s+/).slice(-4).join(' ');
+    similes.push((lead?lead+' ':'')+mm[2]+' '+(mm[3]||'')+mm[4]);
+  }
+
+  /* sentence & syntax */
+  var sentences=(body.match(/[^.!?]+[.!?]+/g)||(body.trim()?[body.trim()]:[]));
+  var sentLens=sentences.map(function(s){ return tokenize(s).length; }).filter(function(x){ return x>0; });
+  var avgSent=sentLens.length?sentLens.reduce(function(a,b){ return a+b; },0)/sentLens.length:wc;
+  var shortest=sentLens.length?Math.min.apply(null,sentLens):0;
+  var longest=sentLens.length?Math.max.apply(null,sentLens):0;
+
+  var lineWordCounts=lines.map(function(l){ return tokenize(l).length; });
+  var lineVar=0;
+  if(lineWordCounts.length){
+    var mu=lineWordCounts.reduce(function(a,b){ return a+b; },0)/lineWordCounts.length;
+    lineVar=Math.sqrt(lineWordCounts.reduce(function(a,b){ return a+(b-mu)*(b-mu); },0)/lineWordCounts.length);
+  }
+
+  var punct={
+    comma:(body.match(/,/g)||[]).length,
+    dash:(body.match(/—|–|--/g)||[]).length,
+    question:(body.match(/\?/g)||[]).length,
+    exclaim:(body.match(/!/g)||[]).length,
+    semicolon:(body.match(/;/g)||[]).length
+  };
+
+  return {
+    lineCount:lines.length, stanzaCount:stanzas.length, wordCount:wc,
+    uniqueCount:uniqueCount, richness:wc?uniqueCount/wc:0,
+    keys:keys, fields:fields, form:form,
+    repeatedPhrases:repeatedPhrases, allit:allit, assonance:assonance,
+    enjambRatio:enjambRatio, enjambExamples:enjambExamples, similes:similes,
+    sentenceCount:sentences.length, avgSent:avgSent, shortestSent:shortest, longestSent:longest,
+    lineWordCounts:lineWordCounts, lineVar:lineVar, punct:punct,
+    avgWordsPerLine:lines.length?wc/lines.length:0
+  };
+}
+
+var _analysisCache={};
+function analysisFor(p){
+  var key=p.id+':'+simpleHash(p.body+'|'+p.title);
+  if(!_analysisCache[key]) _analysisCache[key]=analyzePoem(p.body,p.title);
+  return _analysisCache[key];
+}
+function formOf(p){ return analysisFor(p).form.form; }
+
+/* ================= READING NOTES: prose ================= */
+function noteSec(label,figure,unit,bodyHtml){
+  return '<section class="note-sec">'+
+    '<div class="note-sec-label"><span class="label">'+esc(label)+'</span>'+
+      (figure!=null ? '<div class="note-figure">'+figure+(unit?'<span class="note-figure-unit">'+esc(unit)+'</span>':'')+'</div>' : '')+
+    '</div>'+
+    '<div class="note-body">'+bodyHtml+'</div>'+
+  '</section>';
+}
+function quoteBlock(text,src){
+  return '<div class="quote">'+esc(text)+(src?'<span class="quote-src">'+esc(src)+'</span>':'')+'</div>';
+}
+function lexiconHtml(keys){
+  var top=keys.slice(0,18);
+  if(!top.length) return '<p>Not enough content words yet to build an index.</p>';
+  var max=top[0].count;
+  return '<div class="lexicon">'+top.map(function(k){
+    var tier = k.count>=max*0.85 ? 1 : k.count>=max*0.6 ? 2 : k.count>=max*0.35 ? 3 : 4;
+    return '<span class="lex-word lex-'+tier+'">'+esc(k.word)+(k.count>1?'<span class="c">'+k.count+'</span>':'')+'</span>';
+  }).join('')+'</div>';
+}
+function fieldBarsHtml(fields){
+  var live=fields.filter(function(f){ return f.count>0; }).slice(0,6);
+  if(!live.length) return '';
+  var max=live[0].count;
+  return '<div class="field-bars">'+live.map(function(f){
+    return '<div class="field-bar"><span class="fname">'+esc(f.name)+'</span>'+
+      '<span class="ftrack"><span class="ffill" style="width:'+Math.round((f.count/max)*100)+'%"></span></span>'+
+      '<span class="fcount">'+f.count+'</span></div>';
+  }).join('')+'</div>';
+}
+
+function proseDiction(a){
+  var k=a.keys;
+  if(!k.length) return '<p>The poem is too short to show a pattern of returning words.</p>';
+  var repeated=k.filter(function(x){ return x.count>1; });
+  var lead=k.slice(0,3).map(function(x){ return '<em>'+esc(x.word)+'</em>'; });
+  var p1='The poem\'s weight sits on '+listJoin(lead)+'.';
+  if(repeated.length){
+    var r=repeated.slice(0,3).map(function(x){ return '<em>'+esc(x.word)+'</em> ('+x.count+'×)'; });
+    p1+=' '+cap(listJoin(r))+' come back more than once, which in a poem this length is a choice rather than an accident.';
+  } else {
+    p1+=' Nothing repeats — every content word is spent exactly once, so the poem never leans on a refrain.';
+  }
+  var p2='';
+  var richPct=Math.round(a.richness*100);
+  if(richPct>=72) p2='<p>Vocabulary is wide: '+richPct+'% of the words appear only once. The poem keeps reaching for a new word rather than circling one.</p>';
+  else if(richPct<=55) p2='<p>Vocabulary is deliberately narrow — only '+richPct+'% of the words are unique. The poem works by return, saying the same few things until they change meaning.</p>';
+  else p2='<p>At '+richPct+'% unique words, the diction is balanced: enough repetition to hold a shape, enough variety to keep moving.</p>';
+  var p3='';
+  if(a.repeatedPhrases.length){
+    p3='<p>Whole phrases recur too — '+listJoin(a.repeatedPhrases.map(function(x){ return '<em>'+esc(x.phrase)+'</em> ('+x.count+'×)'; }))+'.</p>';
+  }
+  return '<p>'+p1+'</p>'+p2+p3;
+}
+function proseImage(a){
+  var live=a.fields.filter(function(f){ return f.count>0; });
+  if(!live.length) return '<p>The poem works in statement rather than image — no strong cluster of sensory or concrete words.</p>';
+  var top=live[0], second=live[1];
+  var s='<p>The poem\'s imagination runs strongest through <b>'+esc(top.name).toLowerCase()+'</b> — '+
+    listJoin(top.examples.map(function(w){ return '<em>'+esc(w)+'</em>'; }))+'.';
+  if(second && second.count>=Math.max(2,top.count*0.5)){
+    s+=' Close behind sits <b>'+esc(second.name).toLowerCase()+'</b> ('+listJoin(second.examples.slice(0,3).map(function(w){ return '<em>'+esc(w)+'</em>'; }))+'), and the poem gets much of its charge from holding those two together.';
+  } else if(second){
+    s+=' Everything else is secondary; the poem commits to one register and stays in it.';
+  }
+  s+='</p>';
+  return s;
+}
+function proseSound(a){
+  var out='';
+  var f=a.form;
+  if(f.rhymeDensity>=0.5) out+='<p>Rhyme is doing real structural work here — about '+Math.round(f.rhymeDensity*100)+'% of the line endings chime, in the pattern '+listJoin(f.schemes.slice(0,3).map(function(s){ return '<b>'+esc(s)+'</b>'; }))+'.</p>';
+  else if(f.rhymeDensity>=0.2) out+='<p>Rhyme comes and goes — roughly '+Math.round(f.rhymeDensity*100)+'% of endings answer each other, enough to feel the pull without locking the poem into a pattern.</p>';
+  else out+='<p>The poem declines end rhyme almost entirely, so its music has to come from inside the line.</p>';
+
+  if(a.allit.length){
+    var ex=a.allit[0];
+    out+='<p>It comes largely from consonants: '+a.allit.length+' of the '+a.lineCount+' lines pair neighbouring words on the same opening sound, as in <em>'+esc(ex.words[0])+' / '+esc(ex.words[1])+'</em>.</p>';
+    out+=quoteBlock(ex.line,'alliteration on “'+ex.sound+'”');
+  }
+  if(a.assonance.length){
+    var as=a.assonance[0];
+    out+='<p>Vowels echo as well — <em>'+esc(as.words[0])+'</em> and <em>'+esc(as.words[1])+'</em> share their sound, which slows the line down as you say it.</p>';
+  }
+  if(!a.allit.length && !a.assonance.length) out+='<p>Sound repetition is sparse; the poem trusts its plain statement to carry it.</p>';
+  return out;
+}
+function proseLine(a){
+  var pct=Math.round(a.enjambRatio*100);
+  var out='';
+  if(pct>=60) out+='<p>The poem runs over its own line endings — '+pct+'% of lines break mid-thought. Sense keeps outpacing the line, which is what gives the poem its forward lean.</p>';
+  else if(pct<=25) out+='<p>Lines mostly close where the sense closes ('+(100-pct)+'% end-stopped), so the poem moves in measured, self-contained units.</p>';
+  else out+='<p>The poem alternates: '+pct+'% of lines spill into the next, the rest come to rest. That mix keeps the rhythm from settling into a single gait.</p>';
+  if(a.enjambExamples.length) out+=quoteBlock(a.enjambExamples[0],'the line breaks before the thought does');
+  if(a.lineVar>=3.2) out+='<p>Line lengths vary widely (from '+Math.min.apply(null,a.lineWordCounts)+' to '+Math.max.apply(null,a.lineWordCounts)+' words), so the shape on the page is irregular and the pacing shifts as you read.</p>';
+  else out+='<p>Line lengths stay close to '+Math.round(a.avgWordsPerLine)+' words, giving the poem an even column on the page.</p>';
+  return out;
+}
+function proseSyntax(a){
+  var out='<p>Across '+a.sentenceCount+' sentence'+(a.sentenceCount===1?'':'s')+', the average runs '+Math.round(a.avgSent)+' words';
+  if(a.longestSent>a.shortestSent*2.5 && a.shortestSent>0)
+    out+=', but the range is wide — from '+a.shortestSent+' words to '+a.longestSent+'. Short sentences land like statements; the long ones let the poem think aloud.';
+  else out+=', held fairly steady, so no single sentence dominates the poem.';
+  out+='</p>';
+  var marks=[];
+  if(a.punct.dash>=2) marks.push('the dash ('+a.punct.dash+'×), which interrupts rather than concludes');
+  if(a.punct.comma>=6) marks.push('the comma ('+a.punct.comma+'×), keeping clauses accumulating');
+  if(a.punct.question>=1) marks.push('the question mark ('+a.punct.question+'×)');
+  if(a.punct.semicolon>=1) marks.push('the semicolon ('+a.punct.semicolon+'×), a formal join');
+  if(marks.length) out+='<p>Its habits of punctuation lean on '+listJoin(marks)+'.</p>';
+  if(a.form.maxAnaphora>=2) out+='<p>“'+esc(cap(a.form.anaWord))+'” opens '+a.form.maxAnaphora+' of the lines — a small repeating hinge the poem swings on.</p>';
+  return out;
+}
+function proseFigures(a){
+  if(!a.similes.length) return '<p>No explicit comparisons. The poem states its images directly instead of saying one thing is like another — which tends to read as plainer and more certain.</p>';
+  var out='<p>The poem reaches for comparison '+a.similes.length+' time'+(a.similes.length===1?'':'s')+', using <em>like</em> or <em>as</em> to put two unlike things beside each other:</p>';
+  a.similes.slice(0,3).forEach(function(s){ out+=quoteBlock('… '+s+' …',''); });
+  return out;
+}
+
+function readingNotesHtml(p){
+  var a=analysisFor(p);
+  var f=a.form;
+  var formBody='<p>This reads as <b>'+esc(f.form)+'</b>, in '+esc(f.structure)+'. '+f.evidence+'</p>';
+  if(f.form==='Ode') formBody+='<p>An ode holds still and looks hard at one subject, praising it without apology. Its risk is sentimentality; its reward is attention — and attention is mostly what the form is made of.</p>';
+  else if(f.form==='Elegy') formBody+='<p>An elegy moves through loss toward some kind of consolation, even a reluctant one. Watch where the poem turns — that turn is usually the whole argument.</p>';
+  else if(f.form==='Free verse') formBody+='<p>Free verse has to earn its shape line by line, since no inherited pattern is holding it up. The line breaks are the form.</p>';
+  else if(f.form==='Catalogue') formBody+='<p>A catalogue poem builds meaning by accumulation — the list itself is the argument, and the last item carries the most weight.</p>';
+
+  return '<div class="notes" id="reading-notes">'+
+    '<div class="notes-masthead"><div>'+
+      '<span class="label label-ai">Reading notes</span>'+
+      '<h2>'+esc(p.title)+'</h2>'+
+      '<p class="notes-standfirst">A close reading of the poem\'s form, diction, imagery, sound and syntax — with the lines that show it.</p>'+
+    '</div></div>'+
+    noteSec('Form','<span style="font-size:1.15rem">'+esc(f.form)+'</span>',f.structure,formBody)+
+    noteSec('Diction',a.keys.length?a.keys.length:'0','distinct key words',lexiconHtml(a.keys)+proseDiction(a))+
+    noteSec('Imagery',a.fields.reduce(function(s,f){ return s+f.count; },0),'image words',proseImage(a)+fieldBarsHtml(a.fields))+
+    noteSec('Sound',Math.round(f.rhymeDensity*100)+'<span style="font-size:1rem">%</span>','endings rhymed',proseSound(a))+
+    noteSec('The line',a.lineCount,'lines',proseLine(a))+
+    noteSec('Syntax',Math.round(a.avgSent),'words / sentence',proseSyntax(a))+
+    noteSec('Figures',a.similes.length,'comparisons',proseFigures(a))+
+    '<p class="caveat">These notes are produced by pattern-matching — counting sounds, syllables, line endings and word families. They can tell you what the poem does; they can\'t tell you whether it works. That judgement stays with the reader.</p>'+
+  '</div>';
+}
+
+/* ================= SEED CONTENT ================= */
+function seedPoems(){
+  return [
+    { id:'seed1', date:'2025-11-08', title:'Saturday Garage', sample:true, tags:['family','memory'],
+      blurb:'Written after a morning helping my father in his garage. We fixed nothing. It was the best hour of that year.',
+      body:"The garage door groans up like morning,\nand dust goes gold in the one bright beam.\nWrenches lined by size, not sentiment,\nthough sentiment is why they're clean.\n\nYou hand me tools before I ask.\nI hand you nothing back but time —\nthe kind that doesn't rush the bolt,\nthe kind that fathers learn to find.\n\nRadio low. Coffee going cold.\nSome engine ticking as it cools.\nWe are not fixing much of anything.\nWe are just here, among the tools.",
+      style:{font:'serif',size:1.22,leading:1.85,align:'left',accent:'#3B6FD4'},
+      likedBy:['seed-a','seed-b','seed-c'],
+      comments:[{id:'c1',name:'A reader',text:'The last stanza got me. That is exactly what those Saturdays felt like.',ts:'2025-11-10T14:00:00.000Z'}] },
+
+    { id:'seed2', date:'2026-01-22', title:'What the Maple Knows', sample:true, tags:['nature','seasons'],
+      blurb:'The tree outside the kitchen window turns before anything else on the street. I have watched it do this for eleven years.',
+      body:"Every year it lets go first —\nred before the others blush,\nbrave or simply tired, who's to say,\nof holding on so hard, so hushed.\n\nI used to think that losing leaves\nwas something like defeat.\nNow I watch the maple empty out\nand call the emptying complete.\n\nBare branches hold the winter sky\nthe way a hand holds nothing well —\nopen, waiting, unashamed,\nwith a story it won't tell.",
+      style:{font:'serif',size:1.22,leading:1.9,align:'left',accent:'#2FA36B'},
+      likedBy:['seed-a'], comments:[] },
+
+    { id:'seed3', date:'2026-03-15', title:'Ode to a Kitchen Table', sample:true, tags:['home','praise'],
+      blurb:'My mother\u2019s table, which outlasted two houses and everyone\u2019s opinion of it.',
+      body:"Fifty years and you have not complained,\nyou patient acre of scarred and honest oak.\nYou held the homework and the hospital forms,\nthe birthday candles, the bad news gently spoke.\n\nYou wear your history where we can read it:\nthat ring from a glass nobody thought to lift,\nthe gouge my brother swears he didn't make,\nthe worn pale places — every one a gift.\n\nOther furniture gets replaced. Not you.\nYou are the argument for staying put,\nfor being the flat and steady thing\na family sets its elbows and its supper on.\n\nBless your four plain legs. Bless your dull shine.\nBless the way you never once gave way\nunder all the weight we asked you to hold —\nand held, and hold, and will hold, day by day.",
+      style:{font:'serif',size:1.22,leading:1.9,align:'left',accent:'#E08A2E'},
+      likedBy:['seed-a','seed-b'],
+      comments:[{id:'c2',name:'M.',text:'I can picture the exact table. The gouge line made me laugh out loud.',ts:'2026-03-16T11:20:00.000Z'}] },
+
+    { id:'seed4', date:'2026-06-30', title:'Growing Room', sample:true, tags:['family','time'],
+      blurb:'The week we rearranged a bedroom for a child who had already left it.',
+      body:"We moved your bed to make you room\nthough you were barely gone.\nI stood there with a screwdriver\nnot knowing what came on\n\nso strong it stopped my hands —\njust a bed frame, just a wall,\njust a kid who isn't little,\nwho was never little at all,\n\nnot really, not the way I kept it\nfolded in my chest.\nThe room got bigger. So did you.\nI am still doing my best\n\nto let the small rooms go.",
+      style:{font:'serif',size:1.22,leading:1.9,align:'left',accent:'#D9538F'},
+      likedBy:['seed-a','seed-b','seed-c','seed-d'], comments:[] },
+
+    { id:'seed5', date:'2026-07-18', title:'Ode to the Coffee Cup Left Out All Night', sample:true, tags:['home','praise','morning'],
+      blurb:'In praise of an ordinary object that waits without complaint. Started as a joke and stopped being one.',
+      body:"Faithful ring on the windowsill,\nyou kept your inch of cold black tide\nthrough all the hours I was asleep\nand never once complained, or dried.\n\nYou are not beautiful. You chipped\nin ninety-eight and stayed. You hold\nwhat I abandoned, and you hold it\nthe way the patient hold the old.\n\nSmall brown moon, low and steady,\nfirst thing my hand finds in the gray —\nteach me your trick of simply waiting\nfor someone to come back your way.",
+      style:{font:'serif',size:1.22,leading:1.9,align:'left',accent:'#8B5CF6'},
+      likedBy:['seed-a','seed-c'], comments:[] },
+
+    { id:'seed6', date:'2026-08-10', title:'Late August', sample:true, tags:['nature','memory'],
+      blurb:'The last mow of the season, and the particular light that only arrives once the summer is tired.',
+      body:"The light comes in low and gold now,\ntired of standing straight up all summer.\nCicadas wind down like a clock\nnobody remembered to keep wound.\n\nI mow the last of the long grass\nand the smell of it says something\nI don't have better words for —\ngreen, and going, and good.\n\nSoon the maple will start its argument\nwith the sky. Soon the mornings\nwill ask for a jacket. But tonight\nthe porch light is enough. The bugs\nknow it. I do too.",
+      style:{font:'serif',size:1.22,leading:1.85,align:'left',accent:'#0EA5B7'},
+      likedBy:['seed-a'],
+      comments:[{id:'c3',name:'A reader',text:'"tired of standing straight up all summer" — stealing that line for how I feel too.',ts:'2026-08-11T09:05:00.000Z'}] }
+  ];
+}
+
+/* ================= STATE ================= */
+function defaultState(){ return { site:{name:"Dad's Verses", byline:'Collected poems', pinHash:null}, poems:seedPoems() }; }
+function normalizeState(s){
+  var site=s.site||{};
+  var out={ site:{ name:site.name||"Dad's Verses", byline:site.byline||'Collected poems', pinHash:site.pinHash||null }, poems:[] };
+  (s.poems||[]).forEach(function(p){
+    out.poems.push({
+      id:p.id||genId(), title:p.title||'Untitled', date:p.date||todayISO(),
+      tags:Array.isArray(p.tags)?p.tags:[], body:p.body||'', blurb:typeof p.blurb==='string'?p.blurb:'', sample:!!p.sample,
+      style:(function(){ var st=Object.assign(defaultPoemStyle(), p.style||{}); st.font=normalizeFont(st.font); return st; })(),
+      highlights:(Array.isArray(p.highlights)?p.highlights:[]).filter(function(x){ return typeof x==='number'&&x>=0; }),
+      likedBy:Array.isArray(p.likedBy)?p.likedBy:[],
+      comments:Array.isArray(p.comments)?p.comments:[]
+    });
+  });
+  return out;
+}
+function loadState(){
+  var el=document.getElementById('app-data');
+  var raw=el?(el.textContent||'').trim():'';
+  if(raw){ try{ var p=JSON.parse(raw); if(p&&Array.isArray(p.poems)) return normalizeState(p); }catch(e){} }
+  return defaultState();
+}
+function safeJSON(o){ return JSON.stringify(o).replace(/</g,'\\u003c'); }
+
+var state=loadState();
+var runtime={ view:'library', poemId:null, query:'', activeTags:new Set(), activeForms:new Set(),
+  sort:'newest', authorMode:false, showNotes:null, highlightOn:null, popover:null, modal:null,
+  draft:null, picker:null, editingId:null, motionOff:false,
+  pin:'', pinError:'', pinLock:0, pinBusy:false, authorSetup:false, changePin:false };
+var artifactAPI=null, writable=true;
+
+function getVisitorId(){
+  try{
+    var id=localStorage.getItem('dv_visitor');
+    if(!id){ id='v_'+Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('dv_visitor',id); }
+    return id;
+  }catch(e){ return 'v_anon_'+Math.random().toString(36).slice(2); }
+}
+var visitorId=getVisitorId();
+function saveLocal(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function likeCount(p){ return p.likedBy.length; }
+function poemById(id){ for(var i=0;i<state.poems.length;i++){ if(state.poems[i].id===id) return state.poems[i]; } return null; }
+function chronoIndex(p){
+  var sorted=state.poems.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  for(var i=0;i<sorted.length;i++){ if(sorted[i].id===p.id) return i+1; }
+  return 1;
+}
+
+/* ================= PERSISTENCE =================
+   The same page runs in two places and saves differently in each:
+     artifact  hosted on claude.ai — republishes itself with the state inline
+     api       deployed alongside the REST API — reads and writes over HTTP
+     preview   opened as a plain file — reads the built-in poems, saves nothing
+*/
+var API_BASE=(function(){
+  try{
+    var m=document.querySelector('meta[name="poems-api"]');
+    if(m&&m.content) return m.content.replace(/\/+$/,'');
+  }catch(e){}
+  return '/api';
+})();
+var backend={ mode:'preview', token:null, storage:null, tokenConfigured:false,
+              accountConfigured:false, authorName:null, warned:false };
+
+function loadToken(){ try{ return localStorage.getItem('dv_token')||null; }catch(e){ return null; } }
+function saveToken(t){ try{ t?localStorage.setItem('dv_token',t):localStorage.removeItem('dv_token'); }catch(e){} }
+
+async function apiFetch(path,opts){
+  opts=opts||{};
+  var headers=Object.assign({'X-Visitor-Id':visitorId},opts.headers||{});
+  if(opts.body!==undefined) headers['Content-Type']='application/json';
+  if(opts.auth&&backend.token) headers['Authorization']='Bearer '+backend.token;
+  var res=await fetch(API_BASE+path,{
+    method:opts.method||'GET', headers:headers,
+    body:opts.body!==undefined?JSON.stringify(opts.body):undefined,
+    cache:'no-store'
+  });
+  var data=null;
+  try{ data=await res.json(); }catch(e){}
+  if(!res.ok){
+    var err=new Error((data&&data.message)||('Request failed ('+res.status+')'));
+    err.code=(data&&data.error)||('http_'+res.status);
+    err.status=res.status;
+    if(data&&data.retryAfter) err.retryAfter=data.retryAfter;
+    if(data&&typeof data.attemptsRemaining==='number') err.attemptsRemaining=data.attemptsRemaining;
+    throw err;
+  }
+  return data;
+}
+
+/* The API reports a like count plus whether this reader is among them; the UI
+   works from a list, so rebuild one of the right length. */
+function poemFromApi(p){
+  var likedBy=[];
+  for(var i=0;i<p.likes;i++) likedBy.push('reader-'+i);
+  if(p.likedByMe){ if(likedBy.length) likedBy[0]=visitorId; else likedBy.push(visitorId); }
+  return {
+    id:p.id, title:p.title, date:p.date, tags:(p.tags||[]).slice(), body:p.body, blurb:p.blurb||'',
+    style:Object.assign(defaultPoemStyle(),p.style||{}),
+    highlights:Array.isArray(p.highlights)?p.highlights.slice():[],
+    likedBy:likedBy,
+    comments:(p.comments||[]).map(function(c){ return {id:c.id,name:c.name,text:c.text,ts:c.createdAt}; }),
+    sample:!!p.sample
+  };
+}
+function apiPoemPayload(p){
+  return { title:p.title, body:p.body, blurb:p.blurb||'', date:p.date,
+           tags:p.tags.slice(), style:p.style, highlights:highlightsOf(p) };
+}
+async function loadFromApi(){
+  var site=await apiFetch('/site');
+  var list=await apiFetch('/poems?sort=newest');
+  if(site){ state.site.name=site.name||state.site.name; state.site.byline=site.byline||''; }
+  state.poems=(list.poems||[]).map(poemFromApi);
+  _analysisCache={};
+}
+async function initBackend(){
+  try{
+    if(window.claude&&typeof window.claude.use==='function'){
+      artifactAPI=await window.claude.use('artifact');
+      if(artifactAPI){ backend.mode='artifact'; return; }
+    }
+  }catch(e){ artifactAPI=null; }
+  try{
+    var h=await apiFetch('/health');
+    if(h&&h.status==='ok'){
+      backend.mode='api';
+      backend.storage=h.storage||null;
+      backend.tokenConfigured=!!h.authorTokenConfigured;
+      backend.accountConfigured=!!h.authorAccountConfigured;
+      if(backend.storage&&backend.storage.writable===false) writable=false;
+      /* A saved session can have expired or been revoked from another device.
+         Ask the server rather than trusting what is in local storage. */
+      backend.token=loadToken();
+      if(backend.token){
+        try{
+          var who=await apiFetch('/auth/session',{auth:true});
+          if(who&&who.valid){ runtime.authorMode=true; backend.authorName=who.name||null; }
+          else { backend.token=null; saveToken(null); }
+        }catch(e){ backend.token=null; saveToken(null); }
+      }
+      await loadFromApi();
+      return;
+    }
+  }catch(e){}
+  backend.mode='preview';
+}
+function handleApiError(err){
+  var c=err&&err.code;
+  if(err&&err.status===401){
+    backend.token=null; saveToken(null); runtime.authorMode=false;
+    showToast('Your session has ended — sign in again');
+  } else if(c==='read_only'){
+    writable=false;
+    showToast('Nothing is saved yet — connect a KV store');
+  } else if(c==='no_author_token'){
+    showToast('The server has no author token set');
+  } else {
+    showToast((err&&err.message)||'Could not save — please try again');
+  }
+}
+async function apiPersist(op){
+  op=op||{kind:'all'};
+  try{
+    if(op.kind==='like'){
+      await apiFetch('/poems/'+op.id+'/likes',{method:op.liked?'POST':'DELETE',body:{visitorId:visitorId}});
+    } else if(op.kind==='comment:add'){
+      var made=await apiFetch('/poems/'+op.id+'/comments',{method:'POST',body:{name:op.name,text:op.text}});
+      var p=poemById(op.id);
+      if(p&&p.comments.length&&made&&made.id) p.comments[p.comments.length-1].id=made.id;
+    } else if(op.kind==='comment:delete'){
+      await apiFetch('/poems/'+op.id+'/comments/'+op.commentId,{method:'DELETE',auth:true});
+    } else if(op.kind==='poem:create'){
+      var poem=poemById(op.id);
+      var created=await apiFetch('/poems',{method:'POST',auth:true,body:apiPoemPayload(poem)});
+      if(poem&&created&&created.id) poem.id=created.id;   /* adopt the server's id */
+      _analysisCache={};
+    } else if(op.kind==='poem:update'){
+      await apiFetch('/poems/'+op.id,{method:'PATCH',auth:true,body:apiPoemPayload(poemById(op.id))});
+    } else if(op.kind==='poem:delete'){
+      await apiFetch('/poems/'+op.id,{method:'DELETE',auth:true});
+    } else if(op.kind==='highlights'){
+      await apiFetch('/poems/'+op.id+'/highlights',{method:'PUT',auth:true,body:{indices:op.indices}});
+    } else if(op.kind==='site'){
+      await apiFetch('/site',{method:'PATCH',auth:true,body:{name:state.site.name,byline:state.site.byline}});
+    } else {
+      await apiFetch('/import',{method:'POST',auth:true,body:{site:state.site,poems:state.poems}});
+    }
+  }catch(err){
+    handleApiError(err);
+    /* The optimistic change may not have landed — take the server's word for it. */
+    try{ await loadFromApi(); render(); }catch(e){}
+  }
+}
+/* Capture our own head assets at load time. We must NOT use document.head.innerHTML:
+   the artifact shell serves this file inside <body>, so the stylesheet and font links
+   live in the body, and copying the head alone would republish the page with no CSS. */
+var STATIC_HEAD=(function(){
+  var out='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
+  var t=document.querySelector('title');
+  out+='<title>'+((t&&t.textContent)||"Dad's Verses")+'</title>';
+  var links=document.querySelectorAll('link[rel="stylesheet"],link[rel="preconnect"]');
+  for(var i=0;i<links.length;i++) out+=links[i].outerHTML;
+  var css=document.getElementById('app-styles');
+  if(css) out+=css.outerHTML;
+  return out;
+})();
+var STATIC_SCRIPT=(function(){ var s=document.getElementById('app-script'); return s?s.outerHTML:''; })();
+
+function buildFullPage(){
+  if(!STATIC_SCRIPT || STATIC_HEAD.indexOf('app-styles')<0){
+    throw {code:'invalid_content', message:'page assets missing'};
+  }
+  return '<!doctype html><html lang="en"><head>'+STATIC_HEAD+'</head><body>'+
+    '<div id="app"><header class="masthead"><div class="masthead-inner" id="masthead-inner"></div></header>'+
+    '<main id="main-view"></main><footer class="sitefoot" id="sitefoot"></footer></div>'+
+    '<div id="overlay-root"><div id="modal-root"></div><div class="toast-stack" id="toast-stack"></div></div>'+
+    '<script type="application/json" id="app-data">'+safeJSON(state)+'<\/script>'+
+    STATIC_SCRIPT+'</body></html>';
+}
+async function artifactPublish(){
+  if(!artifactAPI) return;
+  try{ await artifactAPI.publish(buildFullPage()); }
+  catch(err){
+    var c=err&&err.code;
+    if(c==='not_writer'||c==='not_granted'||c==='capability_disabled'){
+      if(writable){ writable=false; render(); showToast('Read-only copy — changes are not saved'); }
+    } else if(c!=='conflict'){ showToast('Could not save — please try again'); }
+  }
+}
+async function persist(op){
+  if(backend.mode==='artifact') return artifactPublish();
+  if(backend.mode==='api') return apiPersist(op);
+  if(!backend.warned){ backend.warned=true; showToast('Preview — changes are not saved'); }
+}
+
+/* ================= A11Y & CHROME ================= */
+function applyPrefs(){
+  try{
+    var s=localStorage.getItem('dv_step'); if(s) document.documentElement.style.setProperty('--step',s);
+    var t=localStorage.getItem('dv_theme'); if(t) document.documentElement.setAttribute('data-theme',t);
+    var c=localStorage.getItem('dv_contrast'); if(c==='high') document.documentElement.setAttribute('data-contrast','high');
+    var m=localStorage.getItem('dv_motion'); if(m==='off'){ document.documentElement.setAttribute('data-motion','off'); runtime.motionOff=true; }
+  }catch(e){}
+}
+function stepIndex(){
+  var cur=parseFloat(document.documentElement.style.getPropertyValue('--step'))||1;
+  var idx=1,best=Infinity;
+  STEP_VALUES.forEach(function(v,i){ var d=Math.abs(v-cur); if(d<best){ best=d; idx=i; } });
+  return idx;
+}
+function stepText(dir){
+  var v=STEP_VALUES[clamp(stepIndex()+dir,0,STEP_VALUES.length-1)];
+  document.documentElement.style.setProperty('--step',v);
+  saveLocal('dv_step',String(v)); renderMasthead();
+}
+function toggleContrast(){
+  var on=document.documentElement.getAttribute('data-contrast')==='high';
+  if(on){ document.documentElement.removeAttribute('data-contrast'); saveLocal('dv_contrast',''); }
+  else { document.documentElement.setAttribute('data-contrast','high'); saveLocal('dv_contrast','high'); }
+  renderMasthead();
+}
+function toggleMotion(){
+  var on=document.documentElement.getAttribute('data-motion')==='off';
+  if(on){ document.documentElement.removeAttribute('data-motion'); saveLocal('dv_motion',''); runtime.motionOff=false; }
+  else { document.documentElement.setAttribute('data-motion','off'); saveLocal('dv_motion','off'); runtime.motionOff=true; }
+  renderMasthead();
+}
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var dark=cur==='dark'||(!cur&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var next=dark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next); saveLocal('dv_theme',next); renderMasthead();
+}
+function showToast(msg){
+  var st=document.getElementById('toast-stack'); if(!st) return;
+  var t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.textContent=msg;
+  st.appendChild(t);
+  setTimeout(function(){ t.style.transition='opacity 240ms ease'; t.style.opacity='0'; setTimeout(function(){ t.remove(); },260); },2600);
+}
+function a11yPopover(){
+  var i=stepIndex();
+  var ch=document.documentElement.getAttribute('data-contrast')==='high';
+  var mo=document.documentElement.getAttribute('data-motion')==='off';
+  return '<div class="popover" role="dialog" aria-label="Reading settings">'+
+    '<span class="label">Reading settings</span>'+
+    '<div class="a11y-row"><div><div class="a11y-row-label">Text size</div><div class="a11y-row-desc">Scales the whole site</div></div>'+
+      '<div class="stepper"><button type="button" data-action="a11y-step" data-dir="-1" aria-label="Smaller text">−</button>'+
+      '<span>'+Math.round(STEP_VALUES[i]*100)+'%</span>'+
+      '<button type="button" data-action="a11y-step" data-dir="1" aria-label="Larger text">+</button></div></div>'+
+    '<div class="a11y-row"><div><div class="a11y-row-label">High contrast</div><div class="a11y-row-desc">Stronger text and rules</div></div>'+
+      '<button type="button" class="switch" role="switch" aria-checked="'+ch+'" data-action="a11y-contrast" aria-label="Toggle high contrast"></button></div>'+
+    '<div class="a11y-row"><div><div class="a11y-row-label">Reduce motion</div><div class="a11y-row-desc">Turns off animation</div></div>'+
+      '<button type="button" class="switch" role="switch" aria-checked="'+mo+'" data-action="a11y-motion" aria-label="Toggle reduced motion"></button></div>'+
+  '</div>';
+}
+function renderMasthead(){
+  var h=document.getElementById('masthead-inner'); if(!h) return;
+  h.innerHTML=
+    '<div class="brand"><span class="seal" aria-hidden="true">'+esc((state.site.name||'P').trim().charAt(0).toUpperCase())+'</span>'+
+      '<span class="brand-mark">'+esc(state.site.name)+'</span>'+
+      '<span class="brand-byline">'+esc(state.site.byline)+'</span></div>'+
+    '<nav class="navbtns" aria-label="Sections">'+
+      '<button class="navbtn"'+(runtime.view!=='collection'?' aria-current="page"':'')+' data-action="go-view" data-view="library">Poems</button>'+
+      '<button class="navbtn"'+(runtime.view==='collection'?' aria-current="page"':'')+' data-action="go-view" data-view="collection">Collection</button>'+
+    '</nav>'+
+    '<div class="masthead-tools">'+
+      '<button class="icon-btn" data-action="focus-search" aria-label="Search poems" title="Search">'+I_SEARCH+'</button>'+
+      '<div class="modal-wrap"><button class="icon-btn'+(runtime.popover==='a11y'?' is-on':'')+'" data-action="toggle-a11y" aria-haspopup="true" aria-expanded="'+(runtime.popover==='a11y')+'" aria-label="Reading settings" title="Reading settings">'+I_AA+'</button>'+
+        (runtime.popover==='a11y'?a11yPopover():'')+'</div>'+
+      '<button class="icon-btn" data-action="toggle-theme" aria-label="Toggle dark mode" title="Toggle theme">'+I_SUN+'</button>'+
+      '<button class="icon-btn'+(runtime.authorMode?' is-on':'')+'" data-action="open-author" aria-label="Author mode" title="Author mode">'+I_LOCK+'</button>'+
+    '</div>';
+}
+function renderFooter(){
+  try{ if(state.site.name) document.title=state.site.name; }catch(e){}
+  var el=document.getElementById('sitefoot'); if(!el) return;
+  el.innerHTML='<p>'+esc(state.site.name)+' — kept and tended</p>'+
+    '<p>'+(writable?state.poems.length+' poems':'Read-only copy')+'</p>';
+}
+
+/* ================= LIBRARY / INDEX ================= */
+function allTags(){
+  var s={}; state.poems.forEach(function(p){ p.tags.forEach(function(t){ s[t]=1; }); });
+  return Object.keys(s).sort();
+}
+function allForms(){
+  var s={}; state.poems.forEach(function(p){ s[formOf(p)]=(s[formOf(p)]||0)+1; });
+  return Object.keys(s).sort(function(a,b){ return s[b]-s[a]||a.localeCompare(b); });
+}
+function filteredPoems(){
+  var list=state.poems.slice();
+  var q=(runtime.query||'').trim().toLowerCase();
+  if(q) list=list.filter(function(p){
+    return p.title.toLowerCase().indexOf(q)>=0 || p.body.toLowerCase().indexOf(q)>=0 ||
+      p.tags.some(function(t){ return t.toLowerCase().indexOf(q)>=0; }) ||
+      formOf(p).toLowerCase().indexOf(q)>=0;
+  });
+  if(runtime.activeTags.size) list=list.filter(function(p){ return p.tags.some(function(t){ return runtime.activeTags.has(t); }); });
+  if(runtime.activeForms.size) list=list.filter(function(p){ return runtime.activeForms.has(formOf(p)); });
+  if(runtime.sort==='oldest') list.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  else if(runtime.sort==='title') list.sort(function(a,b){ return a.title.localeCompare(b.title); });
+  else if(runtime.sort==='liked') list.sort(function(a,b){ return likeCount(b)-likeCount(a); });
+  else if(runtime.sort==='form') list.sort(function(a,b){ return formOf(a).localeCompare(formOf(b))||b.date.localeCompare(a.date); });
+  else list.sort(function(a,b){ return b.date.localeCompare(a.date); });
+  return list;
+}
+function entryHtml(p,i){
+  var a=analysisFor(p);
+  var liked=p.likedBy.indexOf(visitorId)>=0;
+  var blurb=(p.blurb||'').trim();
+  return '<button class="entry" data-action="open-poem" data-id="'+p.id+'" style="--dot:'+formColor(a.form.form)+';animation-delay:'+Math.min(i*40,320)+'ms">'+
+    '<span class="entry-main">'+
+      '<span class="entry-top">'+
+        '<span class="badge badge-tinted">'+esc(a.form.form)+'</span>'+
+        '<span class="entry-num">No. '+pad2(chronoIndex(p))+'</span>'+
+      '</span>'+
+      '<span class="entry-title">'+esc(p.title)+'</span>'+
+      (blurb?'<span class="entry-blurb">'+esc(blurb)+'</span>'
+            :(runtime.authorMode?'<span class="entry-blurb is-empty">No note yet — open the poem to add one.</span>':''))+
+    '</span>'+
+    '<span class="entry-side">'+
+      '<span class="entry-date">'+fmtDate(p.date)+'</span>'+
+      '<span class="entry-stats">'+
+        '<span class="entry-stat'+(liked?' liked':'')+'">'+heartIcon(liked)+likeCount(p)+'</span>'+
+        '<span class="entry-stat">'+I_TALK+p.comments.length+'</span>'+
+      '</span>'+
+      '<span class="entry-tags">'+p.tags.map(function(t){ return '<span class="entry-tag">'+esc(t)+'</span>'; }).join('')+'</span>'+
+    '</span>'+
+  '</button>';
+}
+function renderIndexList(){
+  var host=document.getElementById('index-host'); if(!host) return;
+  var tags=allTags(), forms=allForms(), list=filteredPoems();
+  var filterHtml='<div class="toolbar">'+
+    '<div class="searchbar">'+I_SEARCH+
+      '<input type="text" id="q" placeholder="Search titles, lines, themes, forms…" value="'+esc(runtime.query)+'" aria-label="Search poems">'+
+      '<select class="sort-select" id="sort" aria-label="Sort poems">'+
+        '<option value="newest"'+(runtime.sort==='newest'?' selected':'')+'>Newest</option>'+
+        '<option value="oldest"'+(runtime.sort==='oldest'?' selected':'')+'>Oldest</option>'+
+        '<option value="title"'+(runtime.sort==='title'?' selected':'')+'>Title</option>'+
+        '<option value="form"'+(runtime.sort==='form'?' selected':'')+'>Form</option>'+
+        '<option value="liked"'+(runtime.sort==='liked'?' selected':'')+'>Most liked</option>'+
+      '</select></div>'+
+    (forms.length>1?'<div class="filter-line"><span class="label">Form</span><div class="filter-chips">'+
+      forms.map(function(f){ return '<button type="button" class="chip chip-form" data-action="toggle-form" data-form="'+esc(f)+'" aria-pressed="'+runtime.activeForms.has(f)+'">'+esc(f)+'</button>'; }).join('')+
+      '</div></div>':'')+
+    (tags.length?'<div class="filter-line"><span class="label">Theme</span><div class="filter-chips">'+
+      tags.map(function(t){ return '<button type="button" class="chip" data-action="toggle-tag" data-tag="'+esc(t)+'" aria-pressed="'+runtime.activeTags.has(t)+'">'+esc(t)+'</button>'; }).join('')+
+      '</div></div>':'')+
+  '</div>';
+  var listHtml=list.length
+    ? '<div class="index-list">'+list.map(entryHtml).join('')+'</div>'
+    : '<div class="empty-state"><h3>'+(state.poems.length?'Nothing matches':'No poems yet')+'</h3><p>'+
+      (state.poems.length?'Try another search, or clear the filters.':(runtime.authorMode?'Write the first one — a title and a few lines is enough.':'Check back soon.'))+'</p></div>';
+  host.innerHTML=filterHtml+listHtml;
+}
+function renderLibrary(){
+  var forms=allForms();
+  document.getElementById('main-view').innerHTML=
+    '<div class="view">'+
+      '<div class="issue-head">'+
+        '<div class="issue-head-top"><div>'+
+          '<span class="label label-ai">Poems</span>'+
+          '<h1 class="issue-title">'+esc(state.site.name)+
+            (runtime.authorMode?'<button type="button" class="title-edit" data-action="rename-site">'+I_PENCIL+'Rename</button>':'')+'</h1>'+
+          '<p class="issue-byline">'+(forms.length?'Working chiefly in '+listJoin(forms.slice(0,3).map(function(f){ return f.toLowerCase(); }))+'. Every poem is read closely below — form, diction, imagery, sound.':'A place for the poems, as they come.')+'</p>'+
+        '</div>'+
+        '<div class="issue-count"><span class="n">'+pad2(state.poems.length)+'</span><span class="label">poems</span></div></div>'+
+        (runtime.authorMode?'<button class="btn btn-primary" data-action="open-editor" data-id="">New poem</button>':'')+
+      '</div>'+
+      '<div id="index-host"></div>'+
+    '</div>';
+  renderIndexList();
+}
+
+/* ================= READER ================= */
+function renderReader(){
+  var p=poemById(runtime.poemId);
+  if(!p){ runtime.view='library'; renderLibrary(); return; }
+  var a=analysisFor(p), f=a.form;
+  var liked=p.likedBy.indexOf(visitorId)>=0;
+  var showNotes=runtime.showNotes===p.id;
+  var hl=highlightsOf(p);
+  var hlOn=runtime.highlightOn===p.id;
+
+  var comments=p.comments.length ? '<div class="comment-list">'+p.comments.slice().reverse().map(function(c){
+    var initial=esc((c.name||'?').trim().charAt(0).toUpperCase()||'?');
+    return '<div class="comment"><span class="comment-avatar">'+initial+'</span><div class="comment-body">'+
+      '<div class="comment-head"><span class="comment-author">'+esc(c.name)+'</span>'+
+      '<span class="comment-time">'+timeAgo(c.ts)+'</span></div>'+
+      '<p class="comment-text">'+esc(c.text)+'</p>'+
+      (runtime.authorMode?'<button type="button" class="comment-del" data-action="delete-comment" data-id="'+p.id+'" data-cid="'+c.id+'">Remove</button>':'')+
+    '</div></div>';
+  }).join('')+'</div>' : '<p class="comments-empty">No comments yet — be the first.</p>';
+
+  document.getElementById('main-view').innerHTML=
+    '<div class="view"><button type="button" class="back-link" data-action="go-view" data-view="library">'+I_BACK+'All poems</button>'+
+    '<article class="spread">'+
+      '<header class="poem-head" style="--dot:'+formColor(f.form)+'">'+
+        '<div class="poem-head-meta">'+
+          '<div class="poem-head-left">'+
+            '<span class="badge badge-tinted">'+esc(f.form)+'</span>'+
+            '<span class="label">No. '+pad2(chronoIndex(p))+'</span>'+
+            '<span class="label">'+fmtDate(p.date)+'</span>'+
+          '</div>'+
+          (runtime.authorMode?'<div style="display:flex;gap:8px">'+
+            '<button type="button" class="btn btn-outline btn-sm" data-action="open-editor" data-id="'+p.id+'">Edit</button>'+
+            '<button type="button" class="btn btn-danger btn-sm" data-action="delete-poem" data-id="'+p.id+'">Delete</button></div>':'')+
+        '</div>'+
+        '<h1 class="poem-title">'+esc(p.title)+'</h1>'+
+        ((p.blurb||'').trim()?'<p class="poem-blurb">'+esc(p.blurb.trim())+'</p>':'')+
+      '</header>'+
+      '<div class="poem-body-grid">'+
+        '<div class="poem-sheet" style="--tint:'+p.style.accent+'"><p class="verse" style="'+poemStyleVars(p.style)+'">'+
+          (hlOn?renderVerseHtml(p.body,hl,'read'):esc(p.body))+'</p></div>'+
+        '<aside class="poem-rail">'+
+          '<div class="group">'+
+            '<div class="group-row"><span class="label">Form</span><div class="group-val serif">'+esc(f.form)+'</div><div class="group-note">'+esc(cap(f.structure))+'</div></div>'+
+            '<div class="group-row"><span class="label">Measure</span><div class="group-val">'+a.lineCount+' lines</div><div class="group-note">'+a.wordCount+' words · '+Math.round(a.avgWordsPerLine)+' per line</div></div>'+
+            '<div class="group-row"><span class="label">Returns to</span><div class="group-val serif">'+esc((a.keys[0]&&a.keys[0].word)||'—')+'</div><div class="group-note">'+esc(a.keys.slice(1,4).map(function(k){ return k.word; }).join(' · '))+'</div></div>'+
+            (p.tags.length?'<div class="group-row"><span class="label">Themes</span><div class="group-note" style="margin-top:4px">'+esc(p.tags.join(' · '))+'</div></div>':'')+
+          '</div>'+
+        '</aside>'+
+      '</div>'+
+      '<div class="engage">'+
+        '<button type="button" class="like-btn" data-action="toggle-like" data-id="'+p.id+'" aria-pressed="'+liked+'" aria-label="'+(liked?'Unlike this poem':'Like this poem')+'">'+
+          heartIcon(liked)+likeCount(p)+' '+(likeCount(p)===1?'like':'likes')+'</button>'+
+        (hl.length?'<button type="button" class="hl-toggle" data-action="toggle-highlights" data-id="'+p.id+'" '+
+          'style="--tint:'+p.style.accent+'" aria-pressed="'+hlOn+'">'+I_MARKER+
+          (hlOn?'Hide the poet’s words':'Show the poet’s words')+
+          '<span class="hl-count">'+hl.length+'</span></button>':'')+
+        (runtime.authorMode?'<button type="button" class="btn btn-quiet btn-sm" data-action="open-picker" data-id="'+p.id+'">'+
+          (hl.length?'Edit highlights':'Highlight words')+'</button>':'')+
+        (!writable?'<span class="readonly-note">Read-only copy — likes aren’t saved</span>':'')+
+      '</div>'+
+      '<section class="comments"><div class="comments-head"><h3>Comments</h3><span class="comments-count">'+p.comments.length+'</span></div>'+
+        (writable?'<form class="comment-form" id="comment-form" data-id="'+p.id+'">'+
+          '<input class="cf-name" type="text" name="name" maxlength="40" placeholder="Your name" required aria-label="Your name">'+
+          '<div class="cf-bottom">'+
+            '<textarea class="cf-text" name="text" rows="1" maxlength="600" placeholder="Say something about this one…" required aria-label="Your comment"></textarea>'+
+            '<button class="cf-send" type="submit" aria-label="Post comment" title="Post comment">'+I_SEND+'</button>'+
+          '</div></form>':'')+
+        comments+
+      '</section>'+
+      '<div class="notes-toggle"><button type="button" class="btn btn-tinted" data-action="toggle-notes" data-id="'+p.id+'">'+(showNotes?'Hide reading notes':'Read closely')+'</button></div>'+
+      (showNotes?readingNotesHtml(p):'')+
+    '</article></div>';
+}
+
+/* ================= COLLECTION ================= */
+function trendSvg(data,suffix){
+  if(data.length<2) return '<p class="trend-read">Two or more poems are needed before a trend means anything.</p>';
+  var w=460,h=110,pad=14;
+  var vals=data.map(function(d){ return d.value; });
+  var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals), range=(max-min)||1;
+  var stepX=(w-pad*2)/(data.length-1);
+  var pts=data.map(function(d,i){ return { x:pad+i*stepX, y:pad+(h-pad*2)*(1-(d.value-min)/range), d:d }; });
+  var line=pts.map(function(p,i){ return (i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' ');
+  var area=line+' L'+pts[pts.length-1].x.toFixed(1)+' '+(h-pad)+' L'+pts[0].x.toFixed(1)+' '+(h-pad)+' Z';
+  var dots=pts.map(function(p,i){
+    var end=i===pts.length-1;
+    return '<circle class="tdot'+(end?' end':'')+'" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(end?3.6:2.6)+'">'+
+      '<title>'+esc(p.d.label)+' — '+p.d.value+suffix+'</title></circle>';
+  }).join('');
+  var first=vals[0],last=vals[vals.length-1];
+  var dir=last>first*1.08?'rising':last<first*0.92?'falling':'steady';
+  return '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+dir+' across the collection">'+
+    '<line class="tbase" x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'"/>'+
+    '<path class="tarea" d="'+area+'"/>'+
+    '<path class="tline" d="'+line+'"/>'+dots+
+    '<text x="'+pad+'" y="'+(h-3)+'">'+fmtTiny(data[0].date)+'</text>'+
+    '<text x="'+(w-pad)+'" y="'+(h-3)+'" text-anchor="end">'+fmtTiny(data[data.length-1].date)+'</text></svg>'+
+    '<p class="trend-read">'+cap(dir)+' — from '+first+suffix+' to '+last+suffix+'.</p>';
+}
+function renderCollection(){
+  var main=document.getElementById('main-view');
+  var poems=state.poems.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  if(!poems.length){
+    main.innerHTML='<div class="view"><div class="empty-state"><h3>Nothing to read yet</h3><p>Once there are a few poems, the patterns across them appear here.</p></div></div>';
+    return;
+  }
+  var A=poems.map(function(p){ return {p:p,a:analysisFor(p)}; });
+  var totalWords=0; A.forEach(function(x){ totalWords+=x.a.wordCount; });
+
+  /* collection lexicon — distinctive key words weighted across poems */
+  var agg={};
+  A.forEach(function(x){
+    x.a.keys.forEach(function(k){
+      if(!agg[k.stem]) agg[k.stem]={word:k.word,count:0,poems:{},light:k.light};
+      agg[k.stem].count+=k.count;
+      agg[k.stem].poems[x.p.title]=1;
+      if(k.word.length<agg[k.stem].word.length) agg[k.stem].word=k.word;
+    });
+  });
+  var minSpread=poems.length>=3?2:1;
+  var lexicon=Object.keys(agg).map(function(s){
+    var g=agg[s], spread=Object.keys(g.poems).length;
+    return { word:g.word, count:g.count, spread:spread, poems:Object.keys(g.poems),
+      score:g.count*(g.light?0.3:1)*(1+spread*0.8) };
+  }).filter(function(x){ return x.spread>=minSpread && x.count>1; })
+    .sort(function(a,b){ return b.score-a.score; }).slice(0,12);
+
+  /* forms */
+  var formTally={};
+  A.forEach(function(x){ var f=x.a.form.form; formTally[f]=(formTally[f]||0)+1; });
+  var formRows=Object.keys(formTally).map(function(f){ return [f,formTally[f]]; }).sort(function(a,b){ return b[1]-a[1]; });
+  var formMax=formRows[0][1];
+
+  /* image fields across collection */
+  var fieldTotals={};
+  IMAGE_FIELDS.forEach(function(f){ fieldTotals[f.key]={name:f.name,count:0}; });
+  A.forEach(function(x){ x.a.fields.forEach(function(f){ fieldTotals[f.key].count+=f.count; }); });
+  var fieldRank=Object.keys(fieldTotals).map(function(k){ return fieldTotals[k]; })
+    .filter(function(f){ return f.count>0; }).sort(function(a,b){ return b.count-a.count; });
+
+  var vocab={}; A.forEach(function(x){ tokenize(x.p.body).forEach(function(w){ vocab[w]=1; }); });
+
+  var lenTrend=A.map(function(x){ return {date:x.p.date,label:x.p.title,value:x.a.wordCount}; });
+  var richTrend=A.map(function(x){ return {date:x.p.date,label:x.p.title,value:Math.round(x.a.richness*100)}; });
+  var imgTrend=A.map(function(x){
+    var tot=0; x.a.fields.forEach(function(f){ tot+=f.count; });
+    return {date:x.p.date,label:x.p.title,value:x.a.wordCount?Math.round((tot/x.a.wordCount)*100):0};
+  });
+  var rhymeTrend=A.map(function(x){ return {date:x.p.date,label:x.p.title,value:Math.round(x.a.form.rhymeDensity*100)}; });
+
+  var dominantForm=formRows[0][0];
+  var formShare=Math.round((formRows[0][1]/poems.length)*100);
+  var takesArticle=['Ode','Elegy','Sonnet','Ballad','Haiku','Tanka','Villanelle','Limerick','Lyric','Catalogue'].indexOf(dominantForm)>=0;
+  var domPhrase=(takesArticle?'the ':'')+dominantForm.toLowerCase();
+  var openingObs='<p>Across '+poems.length+' poems written between '+fmtShort(poems[0].date)+' and '+fmtShort(poems[poems.length-1].date)+
+    ', the work returns most often to <b>'+esc(domPhrase)+'</b> — '+formRows[0][1]+' of '+poems.length+' poems, or '+formShare+'%.</p>';
+  if(formRows.length>1) openingObs+='<p>Alongside it sit '+listJoin(formRows.slice(1,4).map(function(r){ return formCountPhrase(r[0],r[1]); }))+'.</p>';
+  if(fieldRank.length) openingObs+='<p>Its imagination is grounded in <b>'+esc(fieldRank[0].name.toLowerCase())+'</b>'+
+    (fieldRank[1]?' and <b>'+esc(fieldRank[1].name.toLowerCase())+'</b>':'')+
+    ', and the words that travel furthest between poems are '+listJoin(lexicon.slice(0,3).map(function(l){ return '<em>'+esc(l.word)+'</em>'; }))+'.</p>';
+
+  main.innerHTML=
+    '<div class="view">'+
+      '<div class="coll-head">'+
+        '<span class="label label-ai">The Collection</span>'+
+        '<h1 class="coll-title">Reading the whole body of work</h1>'+
+        '<p class="coll-standfirst">What the poems share when you set them side by side — the forms returned to, the words that travel between them, and how the writing has shifted over time.</p>'+
+      '</div>'+
+      '<div class="coll-figures">'+
+        '<div class="coll-fig"><span class="n">'+pad2(poems.length)+'</span><span class="label">poems</span></div>'+
+        '<div class="coll-fig"><span class="n">'+Object.keys(vocab).length+'</span><span class="label">distinct words</span></div>'+
+        '<div class="coll-fig"><span class="n">'+formRows.length+'</span><span class="label">forms used</span></div>'+
+        '<div class="coll-fig"><span class="n">'+Math.round(totalWords/poems.length)+'</span><span class="label">words per poem</span></div>'+
+      '</div>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Observations</span></div>'+
+        '<div class="coll-sec-body">'+openingObs+'</div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Forms</span></div>'+
+        '<div class="coll-sec-body"><div class="form-list">'+
+        formRows.map(function(r){
+          return '<div class="form-row"><span class="fname">'+esc(r[0])+'</span>'+
+            '<span class="ftrack"><span class="ffill" style="width:'+Math.round((r[1]/formMax)*100)+'%"></span></span>'+
+            '<span class="fcount">'+r[1]+'</span></div>';
+        }).join('')+
+        '</div></div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Lexicon</span></div>'+
+        '<div class="coll-sec-body"><p style="margin-bottom:20px">Words that recur across more than one poem — the vocabulary the work keeps coming back to.</p>'+
+        '<div class="lex-collection">'+
+        (lexicon.length?lexicon.map(function(l){
+          return '<div class="lex-row"><span class="w">'+esc(l.word)+'<span class="c">'+l.count+'</span></span>'+
+            '<span class="where">'+esc(l.poems.slice(0,3).join(' · '))+(l.poems.length>3?' and '+(l.poems.length-3)+' more':'')+'</span></div>';
+        }).join(''):'<p>Not enough repetition yet to build a lexicon.</p>')+
+        '</div></div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Imagery</span></div>'+
+        '<div class="coll-sec-body">'+fieldBarsHtml(fieldRank.map(function(f){ return {name:f.name,count:f.count}; }))+'</div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Over time</span></div>'+
+        '<div class="coll-sec-body"><div class="trend-pair">'+
+          '<div class="trend"><span class="label">Length</span>'+trendSvg(lenTrend,' words')+'</div>'+
+          '<div class="trend"><span class="label">Vocabulary range</span>'+trendSvg(richTrend,'%')+'</div>'+
+          '<div class="trend"><span class="label">Density of imagery</span>'+trendSvg(imgTrend,'%')+'</div>'+
+          '<div class="trend"><span class="label">Use of rhyme</span>'+trendSvg(rhymeTrend,'%')+'</div>'+
+        '</div></div></section>'+
+
+      '<p class="caveat">Everything here is counted, not judged: word families, line endings, syllables, sound repetitions. With a small number of poems the lines will swing hard — they steady as the collection grows.</p>'+
+    '</div>';
+}
+
+/* ================= MODALS ================= */
+function syncDraft(){
+  var form=document.getElementById('poem-editor-form');
+  if(!form||!runtime.draft) return;
+  var fd=new FormData(form);
+  runtime.draft.title=fd.get('title')||'';
+  runtime.draft.date=fd.get('date')||runtime.draft.date;
+  runtime.draft.tags=(fd.get('tags')||'').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  runtime.draft.blurb=fd.get('blurb')||'';
+  var nextBody=fd.get('body')||'';
+  if(nextBody!==runtime.draft.body){
+    runtime.draft.highlights=remapHighlights(runtime.draft.body,nextBody,runtime.draft.highlights||[]);
+    runtime.draft.body=nextBody;
+  }
+}
+function formPanelHtml(f){
+  if(!f) return '<div style="font-size:var(--fs-cap);color:var(--sumi-faint)">Write a few lines and the form appears here.</div>';
+  return '<div style="font-family:var(--f-display);font-size:1.05rem;font-weight:500">'+esc(f.form)+'</div>'+
+    '<div style="font-size:var(--fs-cap);color:var(--sumi-faint);margin-top:4px;line-height:1.5">'+
+    esc(cap(f.structure))+' — '+esc(f.evidence.replace(/<[^>]*>/g,''))+'</div>';
+}
+function updateLiveEditor(){
+  if(!runtime.draft) return;
+  syncDraft();
+  var d=runtime.draft;
+  var prev=document.getElementById('live-preview');
+  if(prev) prev.textContent=excerpt(d.body,4)||'The poem will appear here…';
+  var fp=document.getElementById('live-form');
+  if(fp) fp.innerHTML=formPanelHtml(d.body.trim()?classifyForm(d.body,d.title):null);
+}
+function editorModal(){
+  var editing=runtime.modal.id?poemById(runtime.modal.id):null;
+  var d=runtime.draft;
+  var liveForm=d.body.trim()?classifyForm(d.body,d.title):null;
+  return '<div class="scrim" data-action="scrim-close"><div class="modal" role="dialog" aria-label="'+(editing?'Edit poem':'New poem')+'">'+
+    '<span class="label label-ai">'+(editing?'Edit':'New poem')+'</span>'+
+    '<h2>'+(editing?esc(editing.title):'Write a poem')+'</h2>'+
+    '<p class="modal-sub">'+(editing?'Change the words, or the way they sit on the page.':'A title, the lines, and a date. The form is recognised for you.')+'</p>'+
+    '<form id="poem-editor-form">'+
+      '<div class="field-row">'+
+        '<div class="field"><label for="ed-title">Title</label><input type="text" id="ed-title" name="title" value="'+esc(d.title)+'" required></div>'+
+        '<div class="field" style="max-width:165px"><label for="ed-date">Date</label><input type="date" id="ed-date" name="date" value="'+esc(d.date)+'" required></div>'+
+      '</div>'+
+      '<div class="field"><label for="ed-body">The poem</label><textarea id="ed-body" name="body" rows="12" required>'+esc(d.body)+'</textarea>'+
+        '<span class="field-hint">Leave a blank line between stanzas.</span></div>'+
+      '<div class="field"><label>Recognised form</label><div class="preview-sheet" style="padding:14px 16px" id="live-form">'+
+        formPanelHtml(liveForm)+'</div><span class="field-hint">Detected from the text as you write.</span></div>'+
+      '<div class="field"><label for="ed-blurb">A note about this poem</label>'+
+        '<textarea id="ed-blurb" name="blurb" rows="2" maxlength="280" style="font-family:var(--f-ui);font-size:var(--fs-ui);line-height:1.6" '+
+        'placeholder="A line or two for the poems list — what it is, when it came, who it is for.">'+esc(d.blurb||'')+'</textarea>'+
+        '<span class="field-hint">Shown on the poems list instead of the poem itself.</span></div>'+
+      '<div class="field"><label for="ed-tags">Themes</label><input type="text" id="ed-tags" name="tags" value="'+esc(d.tags.join(', '))+'" placeholder="family, praise, seasons">'+
+        '<span class="field-hint">Comma separated. These are your own labels — the form above is detected automatically.</span></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Typeface</label><div class="style-row">'+
+          POEM_FONTS.map(function(f){ return '<button type="button" class="btn btn-sm '+(d.style.font===f.id?'btn-primary':'btn-outline')+'" data-action="set-style" data-prop="font" data-val="'+f.id+'">'+f.label+'</button>'; }).join('')+
+        '</div></div>'+
+        '<div class="field"><label>Alignment</label><div class="style-row">'+
+          '<button type="button" class="align-opt" data-action="set-style" data-prop="align" data-val="left" aria-pressed="'+(d.style.align==='left')+'" aria-label="Align left">Left</button>'+
+          '<button type="button" class="align-opt" data-action="set-style" data-prop="align" data-val="center" aria-pressed="'+(d.style.align==='center')+'" aria-label="Align centre">Centre</button>'+
+        '</div></div>'+
+      '</div>'+
+      '<div class="field"><label>Accent colour</label><div class="style-row">'+
+        ACCENT_SWATCHES.map(function(c){ return '<button type="button" class="swatch" style="background:'+c+'" aria-pressed="'+(d.style.accent===c)+'" data-action="set-style" data-prop="accent" data-val="'+c+'" aria-label="Accent '+c+'"></button>'; }).join('')+
+      '</div><span class="field-hint">Tints this poem’s badge and marker.</span></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Text size</label><div class="stepper" style="align-self:flex-start">'+
+          '<button type="button" data-action="style-step" data-prop="size" data-dir="-1" aria-label="Smaller">−</button>'+
+          '<span>'+Math.round(d.style.size*100)+'%</span>'+
+          '<button type="button" data-action="style-step" data-prop="size" data-dir="1" aria-label="Larger">+</button></div></div>'+
+        '<div class="field"><label>Line spacing</label><div class="stepper" style="align-self:flex-start">'+
+          '<button type="button" data-action="style-step" data-prop="leading" data-dir="-1" aria-label="Tighter">−</button>'+
+          '<span>'+d.style.leading.toFixed(2)+'</span>'+
+          '<button type="button" data-action="style-step" data-prop="leading" data-dir="1" aria-label="Looser">+</button></div></div>'+
+      '</div>'+
+      '<div class="field"><label>Highlighted words</label>'+
+        '<div class="preview-sheet" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
+          '<span style="flex:1;min-width:150px;font-size:var(--fs-cap);color:var(--ink-2)">'+
+            ((d.highlights&&d.highlights.length)?d.highlights.length+' word'+(d.highlights.length===1?'':'s')+' marked for readers':'None marked yet')+'</span>'+
+          '<button type="button" class="btn btn-tinted btn-sm" data-action="open-picker" data-id="">'+
+            ((d.highlights&&d.highlights.length)?'Edit highlights':'Choose highlights')+'</button>'+
+        '</div><span class="field-hint">Readers see a clean poem and can reveal these.</span></div>'+
+      '<div class="field"><label>Preview</label><div class="preview-sheet"><p class="verse" id="live-preview" style="'+poemStyleVars(d.style)+'font-size:1rem">'+
+        esc(excerpt(d.body,4)||'The poem will appear here…')+'</p></div></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+        '<button type="submit" class="btn btn-primary">'+(editing?'Save':'Publish')+'</button></div>'+
+    '</form></div></div>';
+}
+function pickerModal(){
+  var st=runtime.picker; if(!st) return '';
+  var suggestions=keyWords(st.body,8).filter(function(k){
+    return indicesForWords(st.body,[k.word]).some(function(i){ return st.indices.indexOf(i)<0; });
+  }).slice(0,6);
+  return '<div class="scrim" data-action="scrim-close"><div class="modal picker-modal" role="dialog" aria-label="Choose highlighted words" style="--tint:'+st.accent+'">'+
+    '<span class="label label-ai">Highlights</span>'+
+    '<h2>'+esc(st.title||'This poem')+'</h2>'+
+    '<p class="modal-sub">Tap any word to mark it. Drag across several words to mark a phrase. Readers see a clean poem until they choose to reveal what you marked.</p>'+
+    (suggestions.length?'<div class="picker-suggest"><span class="label">Suggested</span>'+
+      suggestions.map(function(k){ return '<button type="button" class="chip" data-action="picker-word" data-word="'+esc(k.word)+'">'+esc(k.word)+(k.count>1?' ·'+k.count:'')+'</button>'; }).join('')+
+      '</div>':'')+
+    '<div class="picker-stage" id="picker-stage"><p class="picker-verse" id="picker-verse">'+
+      renderVerseHtml(st.body,st.indices,'pick')+'</p></div>'+
+    '<div class="picker-bar">'+
+      '<span class="picker-hint" id="picker-count">'+st.indices.length+' word'+(st.indices.length===1?'':'s')+' marked</span>'+
+      '<span class="spacer"></span>'+
+      '<button type="button" class="btn btn-quiet btn-sm" data-action="picker-clear">Clear all</button>'+
+    '</div>'+
+    '<div class="modal-actions">'+
+      '<button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+      '<button type="button" class="btn btn-primary" data-action="picker-save">Save highlights</button>'+
+    '</div></div></div>';
+}
+function openPicker(id){
+  var p=id?poemById(id):null;
+  if(p) runtime.picker={mode:'poem', id:id, title:p.title, body:p.body, accent:p.style.accent, indices:highlightsOf(p).slice()};
+  else {
+    syncDraft();
+    var d=runtime.draft; if(!d||!d.body.trim()) { showToast('Write the poem first'); return; }
+    runtime.picker={mode:'draft', id:null, title:d.title, body:d.body, accent:d.style.accent, indices:(d.highlights||[]).slice()};
+  }
+  runtime.modal={type:'picker'};
+  renderOverlay();
+}
+/* Repaint only the picker's word spans so a drag stays smooth. */
+function refreshPicker(){
+  var st=runtime.picker; if(!st) return;
+  var set={}; st.indices.forEach(function(i){ set[i]=1; });
+  var stage=document.getElementById('picker-verse');
+  if(stage){
+    var nodes=stage.querySelectorAll('.wtok');
+    for(var i=0;i<nodes.length;i++){
+      var on=!!set[+nodes[i].dataset.wi];
+      nodes[i].classList.toggle('on',on);
+      nodes[i].setAttribute('aria-pressed',on?'true':'false');
+    }
+  }
+  var c=document.getElementById('picker-count');
+  if(c) c.textContent=st.indices.length+' word'+(st.indices.length===1?'':'s')+' marked';
+}
+function setPickerWord(i,on){
+  var st=runtime.picker; if(!st) return;
+  var at=st.indices.indexOf(i);
+  if(on && at<0) st.indices.push(i);
+  else if(!on && at>=0) st.indices.splice(at,1);
+}
+function savePicker(){
+  var st=runtime.picker; if(!st) return;
+  var idx=st.indices.slice().sort(function(a,b){ return a-b; });
+  if(st.mode==='poem'){
+    var p=poemById(st.id);
+    if(p){ p.highlights=idx; runtime.highlightOn=idx.length?p.id:null; }
+    runtime.modal=null; runtime.picker=null;
+    render(); persist({kind:'highlights',id:st.id,indices:idx});
+    showToast(idx.length?'Highlights saved':'Highlights cleared');
+  } else {
+    runtime.draft.highlights=idx;
+    runtime.picker=null;
+    runtime.modal={type:'editor',id:runtime.editingId||null};
+    renderOverlay();
+    showToast(idx.length+' word'+(idx.length===1?'':'s')+' marked');
+  }
+  emit('highlights:changed',{id:st.id,indices:idx});
+}
+/* Pointer drag: the first word decides whether the drag adds or removes. */
+var _drag=null;
+function pickerPointerDown(e){
+  var w=e.target.closest && e.target.closest('.wtok');
+  if(!w||!runtime.picker) return;
+  e.preventDefault();
+  var i=+w.dataset.wi;
+  _drag={add:runtime.picker.indices.indexOf(i)<0};
+  setPickerWord(i,_drag.add);
+  refreshPicker();
+}
+function pickerPointerOver(e){
+  if(!_drag||!runtime.picker) return;
+  var w=e.target.closest && e.target.closest('.wtok');
+  if(!w) return;
+  setPickerWord(+w.dataset.wi,_drag.add);
+  refreshPicker();
+}
+function pickerPointerUp(){ _drag=null; }
+
+function confirmDeleteModal(){
+  var p=poemById(runtime.modal.id);
+  return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:420px">'+
+    '<h2>Delete “'+esc(p?p.title:'')+'”?</h2>'+
+    '<p class="modal-sub">The poem and its comments go for everyone. There is no undo.</p>'+
+    '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+    '<button type="button" class="btn btn-danger" data-action="confirm-delete" data-id="'+(p?p.id:'')+'">Delete</button></div></div></div>';
+}
+/* The keypad. Digits, a backspace, and nothing else to get lost in. */
+function pinPad(len,min){
+  var dots='';
+  for(var d=0;d<Math.max(len,min||4);d++){
+    dots+='<span class="pin-dot'+(d<len?' is-filled':'')+'"></span>';
+  }
+  var keys='';
+  for(var n=1;n<=9;n++){
+    keys+='<button type="button" class="pin-key" data-action="pin-key" data-key="'+n+'" aria-label="'+n+'">'+n+'</button>';
+  }
+  keys+='<button type="button" class="pin-key is-quiet" data-action="pin-clear" aria-label="Clear">Clear</button>'+
+        '<button type="button" class="pin-key" data-action="pin-key" data-key="0" aria-label="0">0</button>'+
+        '<button type="button" class="pin-key is-quiet" data-action="pin-back" aria-label="Delete last digit"'+
+          (len?'':' disabled')+'>&#9003;</button>';
+  return '<div class="pin-dots" aria-hidden="true">'+dots+'</div>'+
+         '<div class="pin-pad" role="group" aria-label="PIN keypad">'+keys+'</div>';
+}
+
+function authorModal(){
+  /* Against the API the author has his own account: a PIN he chose, kept as a
+     hash on the server. The environment token is only the key that creates it. */
+  if(backend.mode==='api'){
+    if(!runtime.authorMode){
+      /* Nothing set up yet, and no way to set it up. */
+      if(!backend.accountConfigured&&!backend.tokenConfigured){
+        return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:430px">'+
+          '<span class="label label-ai">Author</span><h2>Not set up yet</h2>'+
+          '<p class="modal-sub">This site has no author account, and no setup key to create one with. '+
+          'Whoever runs the site needs to add AUTHOR_TOKEN to its environment variables and redeploy.</p>'+
+          '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Close</button></div>'+
+          '</div></div>';
+      }
+
+      /* First run: prove you hold the setup key, then choose a PIN. */
+      if(!backend.accountConfigured||runtime.authorSetup){
+        return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:440px">'+
+          '<span class="label label-ai">Author</span><h2>'+(runtime.authorSetup?'Reset the PIN':'Create your account')+'</h2>'+
+          '<p class="modal-sub">'+(runtime.authorSetup
+            ? 'Forgotten the PIN? Enter the setup key and choose a new one. Every device signed in now will be signed out.'
+            : 'Choose a PIN and it is yours from then on \u2014 you will never need the setup key again. The key is the AUTHOR_TOKEN from the site\u2019s environment variables.')+'</p>'+
+          '<form id="author-setup-form">'+
+            '<div class="field"><label for="setup-name">Your name</label>'+
+              '<input type="text" id="setup-name" name="name" maxlength="40" placeholder="Dave" '+
+              'value="'+esc(backend.authorName||'')+'" autocomplete="name"></div>'+
+            '<div class="field"><label for="setup-key">Setup key</label>'+
+              '<input type="password" id="setup-key" name="key" required autocomplete="off" spellcheck="false"></div>'+
+            '<div class="field"><label for="setup-pin">Choose a PIN</label>'+
+              '<input type="password" id="setup-pin" name="pin" inputmode="numeric" pattern="[0-9]*" '+
+              'minlength="4" maxlength="8" required autocomplete="off"></div>'+
+            '<div class="field"><label for="setup-pin2">Type it again</label>'+
+              '<input type="password" id="setup-pin2" name="pin2" inputmode="numeric" pattern="[0-9]*" '+
+              'minlength="4" maxlength="8" required autocomplete="off"></div>'+
+            '<p class="field-hint">4 to 8 digits. Avoid 1234, 0000, or your year of birth.</p>'+
+            '<p class="field-hint" id="author-error" style="color:var(--like)"></p>'+
+            '<div class="modal-actions">'+
+              '<button type="button" class="btn btn-quiet" data-action="'+(runtime.authorSetup?'cancel-setup':'close-modal')+'">Cancel</button>'+
+              '<button type="submit" class="btn btn-primary">'+(runtime.authorSetup?'Set new PIN':'Create account')+'</button></div>'+
+          '</form></div></div>';
+      }
+
+      /* Every day after that: the PIN, on a pad you can actually hit. */
+      var pin=runtime.pin||'';
+      var locked=runtime.pinLock&&runtime.pinLock>Date.now();
+      return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:360px">'+
+        '<span class="label label-ai">Author</span>'+
+        '<h2>'+(backend.authorName?'Hello, '+esc(backend.authorName):'Enter your PIN')+'</h2>'+
+        '<p class="modal-sub" style="margin-bottom:14px">'+(locked
+          ? 'Too many wrong tries. Try again in '+lockWait(runtime.pinLock)+'.'
+          : 'Your PIN unlocks writing, editing and styling.')+'</p>'+
+        (locked?'':pinPad(pin.length,4))+
+        '<p class="pin-error" id="author-error">'+esc(runtime.pinError||'')+'</p>'+
+        '<div class="modal-actions" style="justify-content:space-between">'+
+          '<button type="button" class="btn btn-quiet btn-sm" data-action="close-modal">Cancel</button>'+
+          '<button type="button" class="btn btn-primary" data-action="pin-submit"'+
+            (pin.length>=4&&!locked?'':' disabled')+'>Sign in</button></div>'+
+        '<p class="pin-note"><button type="button" class="linkish" data-action="start-setup">'+
+          'Forgotten it? Reset with the setup key</button></p>'+
+        '</div></div>';
+    }
+    var store=backend.storage||{};
+    if(runtime.changePin){
+      return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:420px">'+
+        '<span class="label label-ai">Author</span><h2>Change your PIN</h2>'+
+        '<p class="modal-sub">You will stay signed in here. Any other device you have used will need the new PIN.</p>'+
+        '<form id="change-pin-form">'+
+          '<div class="field"><label for="cp-old">Current PIN</label>'+
+            '<input type="password" id="cp-old" name="currentPin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<div class="field"><label for="cp-new">New PIN</label>'+
+            '<input type="password" id="cp-new" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<div class="field"><label for="cp-new2">Type it again</label>'+
+            '<input type="password" id="cp-new2" name="pin2" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<p class="field-hint" id="author-error" style="color:var(--like)"></p>'+
+          '<div class="modal-actions">'+
+            '<button type="button" class="btn btn-quiet" data-action="cancel-change-pin">Cancel</button>'+
+            '<button type="submit" class="btn btn-primary">Save new PIN</button></div>'+
+        '</form></div></div>';
+    }
+    return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:450px">'+
+      '<span class="label label-ai">Author</span><h2>Settings</h2>'+
+      '<p class="modal-sub">Signed in'+(backend.authorName?' as '+esc(backend.authorName):'')+' on this device. Saving to '+
+        esc(store.kind==='kv'?'the connected database':store.kind==='file'?'a file on the server':'nothing — this copy is not saved')+'.</p>'+
+      '<form id="author-settings-form">'+
+        '<div class="field"><label for="site-name">Site title</label><input type="text" id="site-name" name="name" maxlength="60" value="'+esc(state.site.name)+'"></div>'+
+        '<div class="field"><label for="site-byline">Subtitle</label><input type="text" id="site-byline" name="byline" maxlength="80" value="'+esc(state.site.byline)+'"></div>'+
+        '<div class="modal-actions" style="justify-content:space-between">'+
+          '<button type="button" class="btn btn-outline btn-sm" data-action="change-pin">Change PIN</button>'+
+          '<div style="display:flex;gap:8px">'+
+            '<button type="button" class="btn btn-quiet" data-action="exit-author">Sign out</button>'+
+            '<button type="submit" class="btn btn-primary">Save</button></div></div>'+
+      '</form>'+
+      '<p class="pin-note" style="text-align:left;margin-top:16px">'+
+        '<button type="button" class="linkish" data-action="signout-everywhere">Sign out on every device</button>'+
+        ' — do this if you think someone else knows the PIN.</p>'+
+      '</div></div>';
+  }
+  if(!runtime.authorMode){
+    var has=!!state.site.pinHash;
+    return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:410px">'+
+      '<span class="label label-ai">Author</span><h2>'+(has?'Author mode':'Set up author mode')+'</h2>'+
+      '<p class="modal-sub">'+(has?'Enter the PIN to write, edit and style poems.':'Choose a PIN so the writing controls stay hidden from readers. This is a light gate on the interface, not a login.')+'</p>'+
+      '<form id="author-form">'+
+        '<div class="field"><label for="pin1">'+(has?'PIN':'Choose a PIN')+'</label><input type="password" id="pin1" name="pin1" inputmode="numeric" minlength="4" required autocomplete="off"></div>'+
+        (has?'':'<div class="field"><label for="pin2">Confirm PIN</label><input type="password" id="pin2" name="pin2" inputmode="numeric" minlength="4" required autocomplete="off"></div>')+
+        '<p class="field-hint" id="author-error" style="color:var(--shu)"></p>'+
+        '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+        '<button type="submit" class="btn btn-primary">'+(has?'Unlock':'Create PIN')+'</button></div>'+
+      '</form></div></div>';
+  }
+  return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:450px">'+
+    '<span class="label label-ai">Author</span><h2>Settings</h2><p class="modal-sub">You are in author mode on this device.</p>'+
+    '<form id="author-settings-form">'+
+      '<div class="field"><label for="site-name">Site title</label><input type="text" id="site-name" name="name" maxlength="60" value="'+esc(state.site.name)+'"></div>'+
+      '<div class="field"><label for="site-byline">Subtitle</label><input type="text" id="site-byline" name="byline" maxlength="80" value="'+esc(state.site.byline)+'"></div>'+
+      '<div class="modal-actions" style="justify-content:space-between">'+
+        '<button type="button" class="btn btn-outline btn-sm" data-action="change-pin">Change PIN</button>'+
+        '<div style="display:flex;gap:8px"><button type="button" class="btn btn-quiet" data-action="exit-author">Sign out</button>'+
+        '<button type="submit" class="btn btn-primary">Save</button></div></div>'+
+    '</form></div></div>';
+}
+function renameModal(){
+  return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:460px">'+
+    '<span class="label label-ai">Site</span><h2>Name this collection</h2>'+
+    '<p class="modal-sub">Whatever you call it appears at the top of the poems list and in the browser tab.</p>'+
+    '<form id="rename-form">'+
+      '<div class="field"><label for="rn-name">Title</label>'+
+        '<input type="text" id="rn-name" name="name" maxlength="60" value="'+esc(state.site.name)+'" required></div>'+
+      '<div class="field"><label for="rn-byline">Subtitle</label>'+
+        '<input type="text" id="rn-byline" name="byline" maxlength="80" value="'+esc(state.site.byline)+'" '+
+        'placeholder="Collected poems"></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">Save</button></div>'+
+    '</form></div></div>';
+}
+function changePinModal(){
+  return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:410px">'+
+    '<h2>Change PIN</h2><form id="change-pin-form">'+
+      '<div class="field"><label for="cp-old">Current PIN</label><input type="password" id="cp-old" name="old" minlength="4" required autocomplete="off"></div>'+
+      '<div class="field"><label for="cp-new">New PIN</label><input type="password" id="cp-new" name="new1" minlength="4" required autocomplete="off"></div>'+
+      '<div class="field"><label for="cp-new2">Confirm new PIN</label><input type="password" id="cp-new2" name="new2" minlength="4" required autocomplete="off"></div>'+
+      '<p class="field-hint" id="cp-error" style="color:var(--shu)"></p>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">Update</button></div></form></div></div>';
+}
+function renderOverlay(){
+  var root=document.getElementById('modal-root'); if(!root) return;
+  var h='';
+  if(runtime.modal){
+    if(runtime.modal.type==='editor') h=editorModal();
+    else if(runtime.modal.type==='author') h=authorModal();
+    else if(runtime.modal.type==='confirmDelete') h=confirmDeleteModal();
+    else if(runtime.modal.type==='changePin') h=changePinModal();
+    else if(runtime.modal.type==='picker') h=pickerModal();
+    else if(runtime.modal.type==='rename') h=renameModal();
+  }
+  root.innerHTML=h;
+  if(runtime.modal){ var f=root.querySelector('input,textarea,button'); if(f) f.focus(); }
+}
+function closeModal(){
+  runtime.pin=''; runtime.pinError=''; runtime.authorSetup=false; runtime.changePin=false;
+  if(runtime.modal&&runtime.modal.type==='picker'&&runtime.picker&&runtime.picker.mode==='draft'){
+    runtime.picker=null;
+    runtime.modal={type:'editor',id:runtime.editingId||null};
+    renderOverlay();
+    return;
+  }
+  runtime.modal=null; runtime.picker=null; renderOverlay();
+}
+
+/* ================= RENDER & ACTIONS ================= */
+function render(){
+  renderMasthead();
+  if(runtime.view==='reader') renderReader();
+  else if(runtime.view==='collection') renderCollection();
+  else renderLibrary();
+  renderFooter();
+  renderOverlay();
+}
+function setView(v){
+  runtime.view=v; runtime.poemId=null; render();
+  window.scrollTo({top:0,behavior:runtime.motionOff?'auto':'smooth'});
+}
+function openPoem(id){
+  runtime.view='reader'; runtime.poemId=id; runtime.showNotes=null;
+  render(); window.scrollTo({top:0,behavior:'auto'});
+}
+function openEditor(id){
+  var ex=id?poemById(id):null;
+  runtime.draft=ex?{title:ex.title,date:ex.date,tags:ex.tags.slice(),body:ex.body,blurb:ex.blurb||'',
+                    style:Object.assign({},ex.style),highlights:highlightsOf(ex).slice()}
+                 :{title:'',date:todayISO(),tags:[],body:'',blurb:'',style:defaultPoemStyle(),highlights:[]};
+  runtime.editingId=id||null;
+  runtime.modal={type:'editor',id:id||null};
+  renderOverlay();
+}
+function stepStyle(prop,dir){
+  var s=runtime.draft.style;
+  if(prop==='size') s.size=clamp(round2(s.size+dir*0.06),0.9,1.8);
+  else if(prop==='leading') s.leading=clamp(round2(s.leading+dir*0.1),1.3,2.4);
+}
+function submitEditor(e){
+  e.preventDefault(); syncDraft();
+  var d=runtime.draft;
+  if(!d.title.trim()||!d.body.trim()) return;
+  var id=runtime.modal.id, newId=null;
+  if(id){
+    var p=poemById(id);
+    if(p) Object.assign(p,{title:d.title.trim(),date:d.date,tags:d.tags,body:d.body,blurb:(d.blurb||'').trim(),style:d.style,
+      highlights:(d.highlights||[]).slice().sort(function(a,b){ return a-b; }),sample:false});
+  } else {
+    newId=genId();
+    state.poems.push({id:newId,title:d.title.trim(),date:d.date,tags:d.tags,body:d.body,blurb:(d.blurb||'').trim(),style:d.style,
+      highlights:(d.highlights||[]).slice().sort(function(a,b){ return a-b; }),sample:false,likedBy:[],comments:[]});
+  }
+  _analysisCache={};
+  runtime.modal=null; runtime.view='library';
+  render();
+  persist(id?{kind:'poem:update',id:id}:{kind:'poem:create',id:newId});
+  showToast(id?'Poem updated':'Poem published');
+}
+function confirmDelete(id){
+  state.poems=state.poems.filter(function(p){ return p.id!==id; });
+  runtime.modal=null; runtime.view='library';
+  render(); persist({kind:'poem:delete',id:id}); showToast('Poem deleted');
+}
+function toggleLike(id){
+  var p=poemById(id); if(!p) return;
+  var i=p.likedBy.indexOf(visitorId);
+  if(i>=0) p.likedBy.splice(i,1); else p.likedBy.push(visitorId);
+  render();
+  var b=document.querySelector('.like-btn');
+  if(b){ b.classList.add('pulse'); setTimeout(function(){ b.classList.remove('pulse'); },450); }
+  persist({kind:'like',id:id,liked:i<0});
+}
+function submitComment(e){
+  e.preventDefault();
+  var form=e.target, p=poemById(form.dataset.id); if(!p) return;
+  var fd=new FormData(form);
+  var name=(fd.get('name')||'').trim().slice(0,40), text=(fd.get('text')||'').trim().slice(0,600);
+  if(!name||!text) return;
+  p.comments.push({id:genId(),name:name,text:text,ts:new Date().toISOString()});
+  render(); persist({kind:'comment:add',id:p.id,name:name,text:text}); showToast('Comment posted');
+}
+function deleteComment(pid,cid){
+  var p=poemById(pid); if(!p) return;
+  p.comments=p.comments.filter(function(c){ return c.id!==cid; });
+  render(); persist({kind:'comment:delete',id:pid,commentId:cid});
+}
+function setErr(id,m){ var e=document.getElementById(id); if(e) e.textContent=m; }
+
+/* ---------------------------------------------------------- the account --- */
+
+function lockWait(until){
+  var s=Math.max(0,Math.ceil((until-Date.now())/1000));
+  if(s<60) return s+' seconds';
+  var m=Math.ceil(s/60);
+  if(m<60) return m+(m===1?' minute':' minutes');
+  var h=Math.round(m/60);
+  return h+(h===1?' hour':' hours');
+}
+function pinPush(d){
+  if(runtime.pinBusy) return;
+  if(runtime.pin.length>=8) return;
+  runtime.pin+=String(d); runtime.pinError='';
+  renderOverlay();
+}
+function pinBack(){
+  if(runtime.pinBusy) return;
+  runtime.pin=runtime.pin.slice(0,-1); runtime.pinError='';
+  renderOverlay();
+}
+/* The pad is for tapping; a keyboard should still work for anyone who prefers
+   one. Only live while the PIN screen is the thing on screen. */
+function onPinKeydown(e){
+  if(!runtime.modal||runtime.modal.type!=='author') return;
+  if(backend.mode!=='api'||runtime.authorMode||runtime.authorSetup) return;
+  if(!backend.accountConfigured) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  var t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') return;
+  if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinPush(e.key); }
+  else if(e.key==='Backspace'){ e.preventDefault(); pinBack(); }
+  else if(e.key==='Enter'){ e.preventDefault(); submitPin(); }
+}
+async function submitPin(){
+  if(runtime.pinBusy||runtime.pin.length<4) return;
+  runtime.pinBusy=true;
+  var pin=runtime.pin;
+  try{
+    var out=await apiFetch('/auth/session',{method:'POST',body:{pin:pin,device:deviceLabel()}});
+    backend.token=out.token; saveToken(out.token);
+    backend.authorName=out.name||null; backend.accountConfigured=true;
+    runtime.pin=''; runtime.pinError=''; runtime.pinLock=0;
+    runtime.authorMode=true; runtime.modal=null; runtime.pinBusy=false;
+    render(); showToast('Signed in'+(out.name?', '+out.name:''));
+  }catch(err){
+    runtime.pinBusy=false; runtime.pin='';
+    if(err&&err.status===429){
+      /* The server decides how long; we only display it. */
+      runtime.pinLock=Date.now()+((err.retryAfter||900)*1000);
+      runtime.pinError='';
+    } else {
+      runtime.pinError=(err&&err.message)||'That did not work.';
+    }
+    renderOverlay();
+  }
+}
+function deviceLabel(){
+  try{
+    var ua=navigator.userAgent||'';
+    if(/iPhone/.test(ua)) return 'iPhone';
+    if(/iPad/.test(ua)) return 'iPad';
+    if(/Android/.test(ua)) return 'Android';
+    if(/Mac OS X/.test(ua)) return 'Mac';
+    if(/Windows/.test(ua)) return 'Windows PC';
+  }catch(e){}
+  return 'a browser';
+}
+async function submitAuthorSetup(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  var key=(fd.get('key')||'').trim();
+  var pin=(fd.get('pin')||'').trim();
+  var pin2=(fd.get('pin2')||'').trim();
+  var name=(fd.get('name')||'').trim();
+  if(pin!==pin2){ setErr('author-error','The two PINs are different.'); return; }
+  var prev=backend.token;
+  backend.token=key;                                   /* the setup key, used once */
+  try{
+    var out=await apiFetch('/auth/setup',{method:'POST',auth:true,
+      body:{pin:pin,name:name,device:deviceLabel(),reset:!!runtime.authorSetup}});
+    backend.token=out.token; saveToken(out.token);      /* replaced by a session immediately */
+    backend.authorName=out.name||null; backend.accountConfigured=true;
+    runtime.authorSetup=false; runtime.authorMode=true; runtime.modal=null;
+    render();
+    showToast(out.reset?'PIN changed':'Account created — your PIN works from now on');
+  }catch(err){
+    backend.token=prev;
+    setErr('author-error', err&&err.status===401
+      ? 'That setup key is not right.'
+      : (err&&err.message)||'Could not create the account.');
+  }
+}
+async function submitApiChangePin(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  var cur=(fd.get('currentPin')||'').trim();
+  var pin=(fd.get('pin')||'').trim();
+  var pin2=(fd.get('pin2')||'').trim();
+  if(pin!==pin2){ setErr('author-error','The two PINs are different.'); return; }
+  try{
+    var out=await apiFetch('/auth/pin',{method:'POST',auth:true,
+      body:{currentPin:cur,pin:pin,device:deviceLabel()}});
+    backend.token=out.token; saveToken(out.token);
+    runtime.changePin=false; renderOverlay();
+    showToast('PIN changed — other devices are signed out');
+  }catch(err){
+    setErr('author-error',(err&&err.message)||'Could not change the PIN.');
+  }
+}
+async function signOut(everywhere){
+  if(backend.mode==='api'&&backend.token){
+    try{ await apiFetch('/auth/session'+(everywhere?'?all=true':''),{method:'DELETE',auth:true}); }
+    catch(e){}                       /* the local token goes either way */
+  }
+  backend.token=null; saveToken(null);
+  runtime.authorMode=false; runtime.modal=null; runtime.changePin=false; runtime.pin='';
+  render();
+  if(everywhere) showToast('Signed out everywhere');
+}
+
+async function submitAuthorToken(e){
+  e.preventDefault();
+  var token=(new FormData(e.target).get('token')||'').trim();
+  if(!token) return;
+  var prev=backend.token;
+  backend.token=token;
+  try{
+    await apiFetch('/export',{auth:true});      /* author-only: a valid token returns 200 */
+    saveToken(token);
+    runtime.authorMode=true; runtime.modal=null;
+    render(); showToast('Signed in');
+  }catch(err){
+    backend.token=prev;
+    var el=document.getElementById('author-error');
+    if(el) el.textContent = err&&err.status===401 ? 'That token is not right.' : (err&&err.message)||'Could not sign in.';
+  }
+}
+function submitAuthor(e){
+  e.preventDefault();
+  var has=!!state.site.pinHash, fd=new FormData(e.target), p1=fd.get('pin1')||'';
+  if(!has){
+    var p2=fd.get('pin2')||'';
+    if(p1.length<4){ setErr('author-error','Use at least 4 characters.'); return; }
+    if(p1!==p2){ setErr('author-error','The PINs do not match.'); return; }
+    state.site.pinHash=simpleHash(p1); runtime.authorMode=true; runtime.modal=null;
+    render(); persist({kind:'all'}); showToast('Author mode ready');
+  } else {
+    if(simpleHash(p1)!==state.site.pinHash){ setErr('author-error','That PIN is not right.'); return; }
+    runtime.authorMode=true; runtime.modal=null; render();
+  }
+}
+function submitAuthorSettings(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  state.site.name=(fd.get('name')||"Dad's Verses").trim();
+  state.site.byline=(fd.get('byline')||'').trim();
+  runtime.modal=null; render(); persist({kind:'site'}); showToast('Settings saved');
+}
+function submitRename(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  var name=(fd.get('name')||'').trim();
+  if(!name) return;
+  state.site.name=name.slice(0,60);
+  state.site.byline=(fd.get('byline')||'').trim().slice(0,80);
+  runtime.modal=null;
+  render(); persist({kind:'site'}); showToast('Renamed');
+}
+function submitChangePin(e){
+  e.preventDefault();
+  var fd=new FormData(e.target), o=fd.get('old')||'', n1=fd.get('new1')||'', n2=fd.get('new2')||'';
+  if(simpleHash(o)!==state.site.pinHash){ setErr('cp-error','That PIN is not right.'); return; }
+  if(n1.length<4){ setErr('cp-error','Use at least 4 characters.'); return; }
+  if(n1!==n2){ setErr('cp-error','The new PINs do not match.'); return; }
+  state.site.pinHash=simpleHash(n1); runtime.modal=null; render(); persist({kind:'all'}); showToast('PIN updated');
+}
+
+function onClick(e){
+  var el=e.target;
+  if(el.classList&&el.classList.contains('scrim')){ closeModal(); return; }
+  if(runtime.popover && !el.closest('.popover') && !el.closest('[data-action="toggle-a11y"]')){
+    runtime.popover=null; renderMasthead();
+  }
+  var btn=el.closest('[data-action]'); if(!btn) return;
+  var a=btn.dataset.action, id=btn.dataset.id;
+  switch(a){
+    case 'go-view': setView(btn.dataset.view); break;
+    case 'open-poem': openPoem(id); break;
+    case 'toggle-like': writable?toggleLike(id):showToast('Read-only copy'); break;
+    case 'toggle-tag':
+      var t=btn.dataset.tag;
+      runtime.activeTags.has(t)?runtime.activeTags.delete(t):runtime.activeTags.add(t);
+      renderIndexList(); break;
+    case 'toggle-form':
+      var f=btn.dataset.form;
+      runtime.activeForms.has(f)?runtime.activeForms.delete(f):runtime.activeForms.add(f);
+      renderIndexList(); break;
+    case 'toggle-highlights':
+      runtime.highlightOn=(runtime.highlightOn===id)?null:id;
+      render(); break;
+    case 'open-picker': openPicker(id||null); break;
+    case 'picker-clear':
+      if(runtime.picker){ runtime.picker.indices=[]; refreshPicker(); }
+      break;
+    case 'picker-word':
+      if(runtime.picker){
+        var w=btn.dataset.word;
+        var hits=indicesForWords(runtime.picker.body,[w]);
+        var allOn=hits.every(function(i){ return runtime.picker.indices.indexOf(i)>=0; });
+        hits.forEach(function(i){ setPickerWord(i,!allOn); });
+        refreshPicker();
+      }
+      break;
+    case 'picker-save': savePicker(); break;
+    case 'toggle-notes':
+      runtime.showNotes=(runtime.showNotes===id)?null:id;
+      render();
+      if(runtime.showNotes){
+        requestAnimationFrame(function(){
+          var n=document.getElementById('reading-notes');
+          if(n) n.scrollIntoView({behavior:runtime.motionOff?'auto':'smooth',block:'start'});
+        });
+      }
+      break;
+    case 'open-editor': openEditor(id||null); break;
+    case 'delete-poem': runtime.modal={type:'confirmDelete',id:id}; renderOverlay(); break;
+    case 'confirm-delete': confirmDelete(id); break;
+    case 'delete-comment': deleteComment(id,btn.dataset.cid); break;
+    case 'close-modal': closeModal(); break;
+    case 'set-style': syncDraft(); runtime.draft.style[btn.dataset.prop]=btn.dataset.val; renderOverlay(); break;
+    case 'style-step': syncDraft(); stepStyle(btn.dataset.prop,+btn.dataset.dir); renderOverlay(); break;
+    case 'toggle-a11y': runtime.popover=(runtime.popover==='a11y')?null:'a11y'; renderMasthead(); break;
+    case 'a11y-step': stepText(+btn.dataset.dir); break;
+    case 'a11y-contrast': toggleContrast(); break;
+    case 'a11y-motion': toggleMotion(); break;
+    case 'toggle-theme': toggleTheme(); break;
+    case 'open-author':
+      runtime.pin=''; runtime.pinError=''; runtime.authorSetup=false; runtime.changePin=false;
+      runtime.modal={type:'author'}; renderOverlay(); break;
+    case 'change-pin':
+      if(backend.mode==='api'){ runtime.changePin=true; renderOverlay(); }
+      else { runtime.modal={type:'changePin'}; renderOverlay(); }
+      break;
+    case 'cancel-change-pin': runtime.changePin=false; renderOverlay(); break;
+    case 'start-setup':
+      runtime.authorSetup=true; runtime.pin=''; runtime.pinError=''; renderOverlay(); break;
+    case 'cancel-setup':
+      runtime.authorSetup=false; runtime.pinError=''; renderOverlay(); break;
+    case 'pin-key': pinPush(btn.dataset.key); break;
+    case 'pin-back': pinBack(); break;
+    case 'pin-clear': runtime.pin=''; runtime.pinError=''; renderOverlay(); break;
+    case 'pin-submit': submitPin(); break;
+    case 'signout-everywhere': signOut(true); break;
+    case 'rename-site': runtime.modal={type:'rename'}; renderOverlay(); break;
+    case 'exit-author': signOut(false); break;
+    case 'focus-search':
+      setView('library');
+      requestAnimationFrame(function(){ var i=document.getElementById('q'); if(i){ i.focus(); i.select(); } });
+      break;
+  }
+}
+function onSubmit(e){
+  var id=e.target.id;
+  if(id==='author-token-form') return submitAuthorToken(e);
+  if(id==='author-setup-form') return submitAuthorSetup(e);
+  if(id==='poem-editor-form') submitEditor(e);
+  else if(id==='comment-form'){ writable?submitComment(e):e.preventDefault(); }
+  else if(id==='author-form') submitAuthor(e);
+  else if(id==='author-settings-form') submitAuthorSettings(e);
+  else if(id==='change-pin-form'){ backend.mode==='api'?submitApiChangePin(e):submitChangePin(e); }
+  else if(id==='rename-form') submitRename(e);
+}
+function onChange(e){ if(e.target.id==='sort'){ runtime.sort=e.target.value; renderIndexList(); } }
+var _liveTimer=null;
+function autoGrow(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,180)+'px';
+}
+function onInput(e){
+  if(e.target.id==='q'){ runtime.query=e.target.value; renderIndexList(); return; }
+  if(e.target.classList && e.target.classList.contains('cf-text')){ autoGrow(e.target); return; }
+  if(e.target.id==='ed-body'||e.target.id==='ed-title'){
+    clearTimeout(_liveTimer);
+    _liveTimer=setTimeout(updateLiveEditor,250);
+  }
+}
+function onKeydown(e){
+  var w=e.target&&e.target.closest&&e.target.closest('.wtok');
+  if(w&&(e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    var i=+w.dataset.wi;
+    setPickerWord(i,runtime.picker.indices.indexOf(i)<0);
+    refreshPicker();
+    return;
+  }
+  if(e.key==='Escape'){
+    if(runtime.modal) closeModal();
+    else if(runtime.popover){ runtime.popover=null; renderMasthead(); }
+    return;
+  }
+  onPinKeydown(e);
+}
+
+/* =================================================================
+   PUBLIC API  —  window.DadsVerses
+   A small scriptable interface over the same data the UI uses.
+   Its resource shapes and paths mirror the standalone REST server,
+   so code written against one works against the other.
+   Run DadsVerses.help() in the browser console for the full list.
+   ================================================================= */
+var _listeners={};
+function emit(evt,detail){
+  (_listeners[evt]||[]).forEach(function(fn){ try{ fn(detail); }catch(e){ console.error(e); } });
+  (_listeners['*']||[]).forEach(function(fn){ try{ fn({event:evt,detail:detail}); }catch(e){ console.error(e); } });
+}
+function apiError(code,message,status){ var e=new Error(message); e.code=code; e.status=status||400; return e; }
+function requireAuthor(){
+  if(!runtime.authorMode) throw apiError('not_author','Author mode is locked. Call DadsVerses.unlock("PIN") first.',401);
+}
+function publicPoem(p){
+  var a=analysisFor(p);
+  var words=poemWords(p.body);
+  return {
+    id:p.id, title:p.title, date:p.date, tags:p.tags.slice(), body:p.body, blurb:p.blurb||'',
+    form:a.form.form, structure:a.form.structure,
+    highlights:highlightsOf(p).slice(),
+    highlightedWords:highlightsOf(p).map(function(i){ return words[i]?words[i].s:null; }).filter(Boolean),
+    likes:p.likedBy.length, likedByMe:p.likedBy.indexOf(visitorId)>=0,
+    comments:p.comments.map(function(c){ return {id:c.id,name:c.name,text:c.text,createdAt:c.ts}; }),
+    style:Object.assign({},p.style), sample:!!p.sample,
+    keyWords:a.keys.slice(0,12).map(function(k){ return {word:k.word,count:k.count}; }),
+    wordCount:a.wordCount, lineCount:a.lineCount, stanzaCount:a.stanzaCount
+  };
+}
+function commitAPI(evt,detail){ render(); persist(); emit(evt,detail); emit('change',detail); }
+
+function apiSetHighlights(id,value){
+  requireAuthor();
+  var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+  var idx;
+  if(Array.isArray(value)&&value.every(function(v){ return typeof v==='number'; })) idx=value.slice();
+  else if(Array.isArray(value)) idx=indicesForWords(p.body,value);
+  else if(value&&Array.isArray(value.indices)) idx=value.indices.slice();
+  else if(value&&Array.isArray(value.words)) idx=indicesForWords(p.body,value.words);
+  else throw apiError('bad_request','Pass an array of word indices, an array of words, or {indices|words}.');
+  var max=poemWords(p.body).length;
+  idx=idx.filter(function(i){ return Number.isInteger(i)&&i>=0&&i<max; });
+  p.highlights=idx.sort(function(a,b){ return a-b; });
+  commitAPI('highlights:changed',{id:id,indices:p.highlights});
+  return publicPoem(p);
+}
+
+var API={
+  version:'1.1.0',
+
+  /* --- reading --- */
+  getPoems:function(opts){
+    opts=opts||{};
+    var list=state.poems.slice();
+    if(opts.search){
+      var q=String(opts.search).toLowerCase();
+      list=list.filter(function(p){
+        return p.title.toLowerCase().indexOf(q)>=0||p.body.toLowerCase().indexOf(q)>=0||
+          p.tags.some(function(t){ return t.toLowerCase().indexOf(q)>=0; })||formOf(p).toLowerCase().indexOf(q)>=0;
+      });
+    }
+    if(opts.form) list=list.filter(function(p){ return formOf(p).toLowerCase()===String(opts.form).toLowerCase(); });
+    if(opts.tag) list=list.filter(function(p){ return p.tags.some(function(t){ return t.toLowerCase()===String(opts.tag).toLowerCase(); }); });
+    list.sort(function(a,b){ return opts.sort==='oldest'?a.date.localeCompare(b.date):b.date.localeCompare(a.date); });
+    if(opts.offset) list=list.slice(opts.offset);
+    if(opts.limit) list=list.slice(0,opts.limit);
+    return list.map(publicPoem);
+  },
+  getPoem:function(id){ var p=poemById(id); return p?publicPoem(p):null; },
+  search:function(q){ return API.getPoems({search:q}); },
+  getForms:function(){
+    var t={}; state.poems.forEach(function(p){ var f=formOf(p); t[f]=(t[f]||0)+1; });
+    return Object.keys(t).map(function(f){ return {form:f,count:t[f],color:formColor(f)}; })
+      .sort(function(a,b){ return b.count-a.count; });
+  },
+  getTags:function(){
+    var t={}; state.poems.forEach(function(p){ p.tags.forEach(function(x){ t[x]=(t[x]||0)+1; }); });
+    return Object.keys(t).sort().map(function(x){ return {tag:x,count:t[x]}; });
+  },
+  analyze:function(id){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    var a=analysisFor(p);
+    return {
+      id:p.id, form:a.form.form, structure:a.form.structure, evidence:a.form.evidence,
+      lineCount:a.lineCount, stanzaCount:a.stanzaCount, wordCount:a.wordCount,
+      uniqueWords:a.uniqueCount, vocabularyRichness:round2(a.richness),
+      rhymeDensity:round2(a.form.rhymeDensity), enjambmentRatio:round2(a.enjambRatio),
+      avgWordsPerLine:round2(a.avgWordsPerLine), avgSentenceLength:round2(a.avgSent),
+      keyWords:a.keys.slice(0,20).map(function(k){ return {word:k.word,count:k.count}; }),
+      imageFields:a.fields.filter(function(f){ return f.count>0; }).map(function(f){ return {field:f.name,count:f.count,examples:f.examples}; }),
+      alliteration:a.allit.map(function(x){ return {sound:x.sound,words:x.words,line:x.line}; }),
+      repeatedPhrases:a.repeatedPhrases, similes:a.similes,
+      rhymeSchemes:a.form.schemes
+    };
+  },
+  getCollection:function(){
+    var poems=state.poems.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var vocab={},total=0;
+    poems.forEach(function(p){ var a=analysisFor(p); total+=a.wordCount; tokenize(p.body).forEach(function(w){ vocab[w]=1; }); });
+    return {
+      poems:poems.length, totalWords:total, distinctWords:Object.keys(vocab).length,
+      averageWords:poems.length?Math.round(total/poems.length):0,
+      forms:API.getForms(), tags:API.getTags(),
+      firstPoem:poems.length?poems[0].date:null, latestPoem:poems.length?poems[poems.length-1].date:null
+    };
+  },
+
+  /* --- highlights --- */
+  getHighlights:function(id){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    var words=poemWords(p.body);
+    return highlightsOf(p).map(function(i){ return {index:i, word:words[i]?words[i].s:null}; });
+  },
+  setHighlights:function(id,value){ return apiSetHighlights(id,value); },
+  highlightWords:function(id,words){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    return apiSetHighlights(id,indicesForWords(p.body,[].concat(words)));
+  },
+  addHighlights:function(id,value){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    var extra=Array.isArray(value)&&value.every(function(v){ return typeof v==='number'; })?value:indicesForWords(p.body,[].concat(value));
+    var merged=highlightsOf(p).concat(extra).filter(function(v,i,arr){ return arr.indexOf(v)===i; });
+    return apiSetHighlights(id,merged);
+  },
+  clearHighlights:function(id){ return apiSetHighlights(id,[]); },
+  suggestHighlights:function(id,n){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    return keyWords(p.body,n||6).map(function(k){ return {word:k.word,count:k.count,indices:indicesForWords(p.body,[k.word])}; });
+  },
+
+  /* --- writing (author mode) --- */
+  isAuthor:function(){ return !!runtime.authorMode; },
+  unlock:function(secret){
+    if(backend.mode==='api'){
+      /* A PIN opens a session; anything longer is treated as the master token. */
+      if(/^\d{4,8}$/.test(String(secret))){
+        return apiFetch('/auth/session',{method:'POST',body:{pin:String(secret),device:deviceLabel()}})
+          .then(function(out){
+            backend.token=out.token; saveToken(out.token);
+            backend.authorName=out.name||null; runtime.authorMode=true; render(); return true;
+          });
+      }
+      backend.token=String(secret);
+      return apiFetch('/export',{auth:true}).then(function(){
+        saveToken(backend.token); runtime.authorMode=true; render(); return true;
+      }).catch(function(err){
+        backend.token=null;
+        throw apiError('bad_token','That is neither a valid PIN nor the author token.',401);
+      });
+    }
+    if(!state.site.pinHash) throw apiError('no_pin','No PIN is set yet — set one from the lock button first.',409);
+    if(simpleHash(String(secret))!==state.site.pinHash) throw apiError('bad_pin','That PIN is not right.',401);
+    runtime.authorMode=true; render(); return true;
+  },
+  lock:function(){
+    runtime.authorMode=false;
+    if(backend.mode==='api'){ backend.token=null; saveToken(null); }
+    render(); return true;
+  },
+  backend:function(){ return {mode:backend.mode, storage:backend.storage, signedIn:!!backend.token}; },
+  reload:function(){ return backend.mode==='api' ? loadFromApi().then(function(){ render(); return true; }) : Promise.resolve(false); },
+  createPoem:function(input){
+    requireAuthor();
+    if(!input||!input.title||!input.body) throw apiError('bad_request','title and body are required.');
+    var p={ id:genId(), title:String(input.title).trim(), date:input.date||todayISO(),
+      tags:Array.isArray(input.tags)?input.tags:[], body:String(input.body),
+      blurb:typeof input.blurb==='string'?input.blurb:'',
+      style:Object.assign(defaultPoemStyle(),input.style||{}),
+      highlights:[], sample:false, likedBy:[], comments:[] };
+    state.poems.push(p);
+    if(input.highlights) p.highlights=Array.isArray(input.highlights)&&input.highlights.every(function(v){ return typeof v==='number'; })
+      ? input.highlights.slice() : indicesForWords(p.body,input.highlights);
+    _analysisCache={};
+    commitAPI('poem:created',{id:p.id});
+    return publicPoem(p);
+  },
+  updatePoem:function(id,patch){
+    requireAuthor();
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    patch=patch||{};
+    if(patch.body!=null && patch.body!==p.body){
+      p.highlights=remapHighlights(p.body,String(patch.body),highlightsOf(p));
+      p.body=String(patch.body);
+    }
+    if(patch.title!=null) p.title=String(patch.title).trim();
+    if(patch.blurb!=null) p.blurb=String(patch.blurb);
+    if(patch.date!=null) p.date=patch.date;
+    if(Array.isArray(patch.tags)) p.tags=patch.tags.slice();
+    if(patch.style) p.style=Object.assign(p.style,patch.style);
+    if(patch.highlights) p.highlights=Array.isArray(patch.highlights)&&patch.highlights.every(function(v){ return typeof v==='number'; })
+      ? patch.highlights.slice() : indicesForWords(p.body,patch.highlights);
+    p.sample=false;
+    _analysisCache={};
+    commitAPI('poem:updated',{id:p.id});
+    return publicPoem(p);
+  },
+  deletePoem:function(id){
+    requireAuthor();
+    var before=state.poems.length;
+    state.poems=state.poems.filter(function(p){ return p.id!==id; });
+    if(state.poems.length===before) throw apiError('not_found','No poem with id '+id,404);
+    _analysisCache={};
+    commitAPI('poem:deleted',{id:id});
+    return true;
+  },
+
+  /* --- engagement --- */
+  like:function(id){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    if(p.likedBy.indexOf(visitorId)<0) p.likedBy.push(visitorId);
+    commitAPI('poem:liked',{id:id,likes:p.likedBy.length});
+    return {likes:p.likedBy.length,likedByMe:true};
+  },
+  unlike:function(id){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    var i=p.likedBy.indexOf(visitorId); if(i>=0) p.likedBy.splice(i,1);
+    commitAPI('poem:unliked',{id:id,likes:p.likedBy.length});
+    return {likes:p.likedBy.length,likedByMe:false};
+  },
+  addComment:function(id,name,text){
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    if(!name||!text) throw apiError('bad_request','name and text are required.');
+    var c={id:genId(),name:String(name).slice(0,40),text:String(text).slice(0,600),ts:new Date().toISOString()};
+    p.comments.push(c);
+    commitAPI('comment:added',{id:id,commentId:c.id});
+    return {id:c.id,name:c.name,text:c.text,createdAt:c.ts};
+  },
+  deleteComment:function(id,commentId){
+    requireAuthor();
+    var p=poemById(id); if(!p) throw apiError('not_found','No poem with id '+id,404);
+    p.comments=p.comments.filter(function(c){ return c.id!==commentId; });
+    commitAPI('comment:deleted',{id:id,commentId:commentId});
+    return true;
+  },
+
+  /* --- data --- */
+  exportJSON:function(pretty){ return JSON.stringify({site:state.site,poems:state.poems},null,pretty?2:0); },
+  importJSON:function(json,opts){
+    requireAuthor();
+    opts=opts||{};
+    var incoming=typeof json==='string'?JSON.parse(json):json;
+    if(!incoming||!Array.isArray(incoming.poems)) throw apiError('bad_request','Expected {poems:[...]}.');
+    var next=normalizeState(incoming);
+    if(opts.merge){
+      var have={}; state.poems.forEach(function(p){ have[p.id]=1; });
+      next.poems.forEach(function(p){ if(!have[p.id]) state.poems.push(p); });
+    } else {
+      state.poems=next.poems;
+      if(incoming.site) state.site=Object.assign(state.site,{name:next.site.name,byline:next.site.byline});
+    }
+    _analysisCache={};
+    commitAPI('data:imported',{count:next.poems.length});
+    return {imported:next.poems.length,total:state.poems.length};
+  },
+
+  /* --- events --- */
+  on:function(evt,fn){ (_listeners[evt]=_listeners[evt]||[]).push(fn); return function(){ API.off(evt,fn); }; },
+  off:function(evt,fn){ _listeners[evt]=(_listeners[evt]||[]).filter(function(f){ return f!==fn; }); },
+
+  /* --- REST-shaped bridge: same paths as the standalone server --- */
+  fetch:function(path,init){
+    init=init||{};
+    var method=(init.method||'GET').toUpperCase();
+    var body=init.body?(typeof init.body==='string'?JSON.parse(init.body):init.body):null;
+    return new Promise(function(resolve){
+      function ok(data,status){ resolve({status:status||200,ok:true,data:data}); }
+      function fail(e){ resolve({status:e.status||400,ok:false,data:{error:e.code||'error',message:e.message}}); }
+      try{
+        var url=String(path).split('?')[0].replace(/\/+$/,'');
+        var qs={};
+        (String(path).split('?')[1]||'').split('&').forEach(function(kv){
+          if(!kv) return; var t=kv.split('='); qs[decodeURIComponent(t[0])]=decodeURIComponent(t[1]||'');
+        });
+        var seg=url.replace(/^\/?api\/?/,'').split('/').filter(Boolean);
+        if(seg[0]==='health') return ok({status:'ok',version:API.version,poems:state.poems.length});
+        if(seg[0]==='collection') return ok(API.getCollection());
+        if(seg[0]==='forms') return ok(API.getForms());
+        if(seg[0]==='tags') return ok(API.getTags());
+        if(seg[0]==='export') return ok(JSON.parse(API.exportJSON()));
+        if(seg[0]==='import'&&method==='POST') return ok(API.importJSON(body,{merge:qs.merge==='true'}));
+        if(seg[0]!=='poems') return fail(apiError('not_found','Unknown path '+path,404));
+        if(seg.length===1){
+          if(method==='GET') return ok(API.getPoems({search:qs.search,form:qs.form,tag:qs.tag,sort:qs.sort,
+            limit:qs.limit?+qs.limit:0,offset:qs.offset?+qs.offset:0}));
+          if(method==='POST') return ok(API.createPoem(body),201);
+          return fail(apiError('method_not_allowed','GET or POST only',405));
+        }
+        var id=seg[1];
+        if(seg.length===2){
+          if(method==='GET'){ var one=API.getPoem(id); return one?ok(one):fail(apiError('not_found','No poem with id '+id,404)); }
+          if(method==='PATCH'||method==='PUT') return ok(API.updatePoem(id,body));
+          if(method==='DELETE') return ok({deleted:API.deletePoem(id)});
+          return fail(apiError('method_not_allowed','GET, PATCH or DELETE',405));
+        }
+        if(seg[2]==='highlights'){
+          if(method==='GET') return ok(API.getHighlights(id));
+          if(method==='PUT') return ok(API.setHighlights(id,body));
+          if(method==='POST') return ok(API.addHighlights(id,body&&(body.indices||body.words)||body));
+          if(method==='DELETE') return ok(API.clearHighlights(id));
+        }
+        if(seg[2]==='analysis'&&method==='GET') return ok(API.analyze(id));
+        if(seg[2]==='suggestions'&&method==='GET') return ok(API.suggestHighlights(id,qs.limit?+qs.limit:6));
+        if(seg[2]==='likes'){
+          if(method==='POST') return ok(API.like(id));
+          if(method==='DELETE') return ok(API.unlike(id));
+        }
+        if(seg[2]==='comments'){
+          if(method==='GET'){ var pp=API.getPoem(id); return pp?ok(pp.comments):fail(apiError('not_found','No poem with id '+id,404)); }
+          if(method==='POST') return ok(API.addComment(id,body&&body.name,body&&body.text),201);
+          if(method==='DELETE'&&seg[3]) return ok({deleted:API.deleteComment(id,seg[3])});
+        }
+        return fail(apiError('not_found','Unknown path '+path,404));
+      }catch(e){ fail(e); }
+    });
+  },
+
+  help:function(){
+    var lines=[
+      'DadsVerses v'+API.version+' — scriptable interface for this site',
+      '',
+      'READ  getPoems({search,form,tag,sort,limit,offset}) · getPoem(id) · search(q)',
+      '      getForms() · getTags() · analyze(id) · getCollection()',
+      'HIGHLIGHTS  getHighlights(id) · setHighlights(id, indices|words)',
+      '      highlightWords(id, ["light","gold"]) · addHighlights(id, …)',
+      '      clearHighlights(id) · suggestHighlights(id, n)',
+      'WRITE (author mode)  unlock(pin) · lock() · isAuthor()',
+      '      createPoem({title, body, date, tags, style, highlights})',
+      '      updatePoem(id, patch) · deletePoem(id)',
+      'ENGAGE  like(id) · unlike(id) · addComment(id, name, text) · deleteComment(id, commentId)',
+      'DATA  exportJSON(pretty) · importJSON(json, {merge})',
+      'EVENTS  on(evt, fn) → unsubscribe · off(evt, fn)',
+      '      change · poem:created · poem:updated · poem:deleted',
+      '      highlights:changed · poem:liked · comment:added · data:imported',
+      'REST BRIDGE  fetch(path, {method, body}) → {status, ok, data}',
+      '      Same paths as the standalone server, e.g.',
+      '      await DadsVerses.fetch("/api/poems?form=ode")',
+      '      await DadsVerses.fetch("/api/poems/ID/highlights", {method:"PUT", body:{words:["hold"]}})'
+    ];
+    console.log(lines.join('\n'));
+    return lines.join('\n');
+  }
+};
+function installAPI(){
+  try{
+    Object.defineProperty(window,'DadsVerses',{value:API,writable:false,configurable:true});
+  }catch(e){ window.DadsVerses=API; }
+}
+
+/* ================= BOOT ================= */
+function boot(){
+  applyPrefs();
+  document.addEventListener('click',onClick);
+  document.addEventListener('submit',onSubmit);
+  document.addEventListener('change',onChange);
+  document.addEventListener('input',onInput);
+  document.addEventListener('keydown',onKeydown);
+  document.addEventListener('pointerdown',pickerPointerDown);
+  document.addEventListener('pointerover',pickerPointerOver);
+  document.addEventListener('pointerup',pickerPointerUp);
+  document.addEventListener('pointercancel',pickerPointerUp);
+  installAPI();
+  render();
+  initBackend().then(function(){
+    render();
+    if(backend.mode==='preview') showToast('Preview — changes are not saved');
+    else if(backend.mode==='api'&&backend.storage&&backend.storage.writable===false)
+      showToast('Read-only — connect a KV store to save changes');
+  });
+}
+boot();
+
+/* ============ APP SCRIPT END ============ */
+})();
+</script>

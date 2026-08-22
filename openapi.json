@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Dad's Verses API",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Poems, the author's highlighted words, likes, comments, and literary analysis.\n\nReads are open. The poet's own actions need `Authorization: Bearer <AUTHOR_TOKEN>`.",
     "license": {
       "name": "MIT"
@@ -19,6 +19,10 @@
     }
   ],
   "tags": [
+    {
+      "name": "Author account",
+      "description": "The poet’s own PIN, and the sessions it opens."
+    },
     {
       "name": "Service",
       "description": "Health and collection-wide data"
@@ -45,7 +49,12 @@
       "authorToken": {
         "type": "http",
         "scheme": "bearer",
-        "description": "The AUTHOR_TOKEN the server was started with."
+        "description": "Either a session token (obtained from POST /api/auth/session with the author’s PIN) or the master AUTHOR_TOKEN from the server’s environment."
+      },
+      "setupKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The master AUTHOR_TOKEN. Only this creates or resets the author account."
       }
     },
     "schemas": {
@@ -624,6 +633,433 @@
                       "type": "integer"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth": {
+      "get": {
+        "summary": "Whether an author account exists, and whether it is locked",
+        "description": "Safe to call unauthenticated. Never returns the hash, the salt, or the sessions.",
+        "tags": [
+          "Author account"
+        ],
+        "responses": {
+          "200": {
+            "description": "Account state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "retryAfter": {
+                      "type": "integer",
+                      "nullable": true,
+                      "description": "Seconds until sign-in reopens."
+                    },
+                    "attemptsRemaining": {
+                      "type": "integer"
+                    },
+                    "setupAvailable": {
+                      "type": "boolean",
+                      "description": "Whether AUTHOR_TOKEN is set, so an account could be created."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/setup": {
+      "post": {
+        "summary": "Create the author account, or reset its PIN",
+        "description": "Gated by the master AUTHOR_TOKEN. On a public site this is what stops the first stranger who finds the page from claiming it. A reset revokes every existing session.",
+        "tags": [
+          "Author account"
+        ],
+        "security": [
+          {
+            "setupKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pin"
+                ],
+                "properties": {
+                  "pin": {
+                    "type": "string",
+                    "pattern": "^[0-9]{4,8}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "device": {
+                    "type": "string",
+                    "description": "A label for the session, e.g. \"iPad\"."
+                  },
+                  "reset": {
+                    "type": "boolean",
+                    "description": "Required when an account already exists."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PIN reset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Bearer token for subsequent author requests."
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Bearer token for subsequent author requests."
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The PIN is too guessable, or not 4–8 digits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong setup key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "An account already exists and reset was not set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUTHOR_TOKEN is not set on the server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "summary": "Check whether the current token is still good",
+        "tags": [
+          "Author account"
+        ],
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "master": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Sign in with the PIN",
+        "description": "Five wrong tries in fifteen minutes locks sign-in for 15 minutes, then an hour, then four hours.",
+        "tags": [
+          "Author account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pin"
+                ],
+                "properties": {
+                  "pin": {
+                    "type": "string"
+                  },
+                  "device": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Bearer token for subsequent author requests."
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong PIN. The body carries attemptsRemaining.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No account has been set up yet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Locked out. The body and the Retry-After header carry the wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Sign out",
+        "tags": [
+          "Author account"
+        ],
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "all",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Sign out on every device rather than just this one."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "signedOut": {
+                      "type": "boolean"
+                    },
+                    "everywhere": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/pin": {
+      "post": {
+        "summary": "Change the PIN",
+        "description": "Needs the current PIN as well as a valid session, so a borrowed unlocked browser cannot take the account over. Every other session is revoked.",
+        "tags": [
+          "Author account"
+        ],
+        "security": [
+          {
+            "authorToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pin"
+                ],
+                "properties": {
+                  "currentPin": {
+                    "type": "string",
+                    "description": "Required unless authenticating with the master token."
+                  },
+                  "pin": {
+                    "type": "string"
+                  },
+                  "device": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Bearer token for subsequent author requests."
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The new PIN is too guessable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The current PIN was wrong, or there is no valid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
