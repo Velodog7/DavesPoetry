@@ -568,6 +568,47 @@
   .modal-actions{ display:flex; justify-content:flex-end; gap:9px; margin-top:14px; }
   .modal-wrap{ position:relative; }
 
+  /* --- PIN pad ---------------------------------------------------------
+     Sized for someone who does not want to squint or aim. Every key is a
+     comfortable target, the digits are large, and the whole thing works from
+     a physical keyboard too. */
+  .pin-dots{
+    display:flex; justify-content:center; gap:12px; margin:4px 0 20px; min-height:20px;
+  }
+  .pin-dot{
+    width:14px; height:14px; border-radius:50%; border:2px solid var(--ink-3);
+    transition:background var(--dur-s) ease, transform var(--dur-s) var(--spring), border-color var(--dur-s) ease;
+  }
+  .pin-dot.is-filled{ background:var(--accent); border-color:var(--accent); transform:scale(1.12); }
+  .pin-pad{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:6px;
+  }
+  .pin-key{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    min-height:64px; border-radius:var(--r-lg);
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    font-family:var(--f-ui); font-size:1.6rem; font-weight:500; font-variant-numeric:tabular-nums;
+    box-shadow:var(--shadow-1);
+    transition:background var(--dur-s) ease, transform var(--dur-s) var(--spring), border-color var(--dur-s) ease;
+  }
+  .pin-key:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+  .pin-key:active{ transform:scale(.95); background:var(--accent-wash); border-color:var(--accent); }
+  .pin-key:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .pin-key.is-quiet{ font-size:var(--fs-cap); font-weight:600; color:var(--ink-2); box-shadow:none; background:transparent; border-color:transparent; }
+  .pin-key.is-quiet:hover{ background:var(--surface-2); }
+  .pin-key[disabled]{ opacity:.35; cursor:default; transform:none; }
+  .pin-error{ color:var(--like); font-size:var(--fs-cap); line-height:1.5; min-height:1.5em; margin-bottom:10px; text-align:center; }
+  .pin-note{ color:var(--ink-3); font-size:var(--fs-micro); text-align:center; margin-top:14px; line-height:1.6; }
+  .linkish{
+    background:none; border:0; padding:0; cursor:pointer; color:var(--accent);
+    font:inherit; text-decoration:underline; text-underline-offset:2px;
+  }
+  .linkish:hover{ color:var(--accent-2); }
+  @media (prefers-reduced-motion: reduce){
+    .pin-dot, .pin-key{ transition:none; }
+    .pin-key:active{ transform:none; }
+  }
+
   .popover{
     position:absolute; top:100%; right:0; margin-top:9px; background:var(--surface);
     border:1px solid var(--hairline); padding:8px; width:296px; z-index:90;
@@ -1489,7 +1530,8 @@ function safeJSON(o){ return JSON.stringify(o).replace(/</g,'\\u003c'); }
 var state=loadState();
 var runtime={ view:'library', poemId:null, query:'', activeTags:new Set(), activeForms:new Set(),
   sort:'newest', authorMode:false, showNotes:null, highlightOn:null, popover:null, modal:null,
-  draft:null, picker:null, editingId:null, motionOff:false };
+  draft:null, picker:null, editingId:null, motionOff:false,
+  pin:'', pinError:'', pinLock:0, pinBusy:false, authorSetup:false, changePin:false };
 var artifactAPI=null, writable=true;
 
 function getVisitorId(){
@@ -1522,7 +1564,8 @@ var API_BASE=(function(){
   }catch(e){}
   return '/api';
 })();
-var backend={ mode:'preview', token:null, storage:null, tokenConfigured:false, warned:false };
+var backend={ mode:'preview', token:null, storage:null, tokenConfigured:false,
+              accountConfigured:false, authorName:null, warned:false };
 
 function loadToken(){ try{ return localStorage.getItem('dv_token')||null; }catch(e){ return null; } }
 function saveToken(t){ try{ t?localStorage.setItem('dv_token',t):localStorage.removeItem('dv_token'); }catch(e){} }
@@ -1543,6 +1586,8 @@ async function apiFetch(path,opts){
     var err=new Error((data&&data.message)||('Request failed ('+res.status+')'));
     err.code=(data&&data.error)||('http_'+res.status);
     err.status=res.status;
+    if(data&&data.retryAfter) err.retryAfter=data.retryAfter;
+    if(data&&typeof data.attemptsRemaining==='number') err.attemptsRemaining=data.attemptsRemaining;
     throw err;
   }
   return data;
@@ -1587,9 +1632,18 @@ async function initBackend(){
       backend.mode='api';
       backend.storage=h.storage||null;
       backend.tokenConfigured=!!h.authorTokenConfigured;
-      backend.token=loadToken();
-      if(backend.token) runtime.authorMode=true;
+      backend.accountConfigured=!!h.authorAccountConfigured;
       if(backend.storage&&backend.storage.writable===false) writable=false;
+      /* A saved session can have expired or been revoked from another device.
+         Ask the server rather than trusting what is in local storage. */
+      backend.token=loadToken();
+      if(backend.token){
+        try{
+          var who=await apiFetch('/auth/session',{auth:true});
+          if(who&&who.valid){ runtime.authorMode=true; backend.authorName=who.name||null; }
+          else { backend.token=null; saveToken(null); }
+        }catch(e){ backend.token=null; saveToken(null); }
+      }
       await loadFromApi();
       return;
     }
@@ -1600,7 +1654,7 @@ function handleApiError(err){
   var c=err&&err.code;
   if(err&&err.status===401){
     backend.token=null; saveToken(null); runtime.authorMode=false;
-    showToast('That token was not accepted — sign in again');
+    showToast('Your session has ended — sign in again');
   } else if(c==='read_only'){
     writable=false;
     showToast('Nothing is saved yet — connect a KV store');
@@ -2267,36 +2321,120 @@ function confirmDeleteModal(){
     '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
     '<button type="button" class="btn btn-danger" data-action="confirm-delete" data-id="'+(p?p.id:'')+'">Delete</button></div></div></div>';
 }
+/* The keypad. Digits, a backspace, and nothing else to get lost in. */
+function pinPad(len,min){
+  var dots='';
+  for(var d=0;d<Math.max(len,min||4);d++){
+    dots+='<span class="pin-dot'+(d<len?' is-filled':'')+'"></span>';
+  }
+  var keys='';
+  for(var n=1;n<=9;n++){
+    keys+='<button type="button" class="pin-key" data-action="pin-key" data-key="'+n+'" aria-label="'+n+'">'+n+'</button>';
+  }
+  keys+='<button type="button" class="pin-key is-quiet" data-action="pin-clear" aria-label="Clear">Clear</button>'+
+        '<button type="button" class="pin-key" data-action="pin-key" data-key="0" aria-label="0">0</button>'+
+        '<button type="button" class="pin-key is-quiet" data-action="pin-back" aria-label="Delete last digit"'+
+          (len?'':' disabled')+'>&#9003;</button>';
+  return '<div class="pin-dots" aria-hidden="true">'+dots+'</div>'+
+         '<div class="pin-pad" role="group" aria-label="PIN keypad">'+keys+'</div>';
+}
+
 function authorModal(){
-  /* Against the API the gate is the server's own token, not a local PIN. */
+  /* Against the API the author has his own account: a PIN he chose, kept as a
+     hash on the server. The environment token is only the key that creates it. */
   if(backend.mode==='api'){
     if(!runtime.authorMode){
-      return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:430px">'+
-        '<span class="label label-ai">Author</span><h2>Sign in to write</h2>'+
-        '<p class="modal-sub">'+(backend.tokenConfigured
-          ? 'Paste the author token from the site\u2019s settings. It stays on this device.'
-          : 'This server has no author token set yet, so nothing can be changed. Add AUTHOR_TOKEN to the environment variables and redeploy.')+'</p>'+
-        (backend.tokenConfigured?'<form id="author-token-form">'+
-          '<div class="field"><label for="tok">Author token</label>'+
-            '<input type="password" id="tok" name="token" required autocomplete="off"></div>'+
-          '<p class="field-hint" id="author-error" style="color:var(--like)"></p>'+
-          '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Cancel</button>'+
-          '<button type="submit" class="btn btn-primary">Sign in</button></div></form>'
-          :'<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Close</button></div>')+
+      /* Nothing set up yet, and no way to set it up. */
+      if(!backend.accountConfigured&&!backend.tokenConfigured){
+        return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:430px">'+
+          '<span class="label label-ai">Author</span><h2>Not set up yet</h2>'+
+          '<p class="modal-sub">This site has no author account, and no setup key to create one with. '+
+          'Whoever runs the site needs to add AUTHOR_TOKEN to its environment variables and redeploy.</p>'+
+          '<div class="modal-actions"><button type="button" class="btn btn-quiet" data-action="close-modal">Close</button></div>'+
+          '</div></div>';
+      }
+
+      /* First run: prove you hold the setup key, then choose a PIN. */
+      if(!backend.accountConfigured||runtime.authorSetup){
+        return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:440px">'+
+          '<span class="label label-ai">Author</span><h2>'+(runtime.authorSetup?'Reset the PIN':'Create your account')+'</h2>'+
+          '<p class="modal-sub">'+(runtime.authorSetup
+            ? 'Forgotten the PIN? Enter the setup key and choose a new one. Every device signed in now will be signed out.'
+            : 'Choose a PIN and it is yours from then on \u2014 you will never need the setup key again. The key is the AUTHOR_TOKEN from the site\u2019s environment variables.')+'</p>'+
+          '<form id="author-setup-form">'+
+            '<div class="field"><label for="setup-name">Your name</label>'+
+              '<input type="text" id="setup-name" name="name" maxlength="40" placeholder="Dave" '+
+              'value="'+esc(backend.authorName||'')+'" autocomplete="name"></div>'+
+            '<div class="field"><label for="setup-key">Setup key</label>'+
+              '<input type="password" id="setup-key" name="key" required autocomplete="off" spellcheck="false"></div>'+
+            '<div class="field"><label for="setup-pin">Choose a PIN</label>'+
+              '<input type="password" id="setup-pin" name="pin" inputmode="numeric" pattern="[0-9]*" '+
+              'minlength="4" maxlength="8" required autocomplete="off"></div>'+
+            '<div class="field"><label for="setup-pin2">Type it again</label>'+
+              '<input type="password" id="setup-pin2" name="pin2" inputmode="numeric" pattern="[0-9]*" '+
+              'minlength="4" maxlength="8" required autocomplete="off"></div>'+
+            '<p class="field-hint">4 to 8 digits. Avoid 1234, 0000, or your year of birth.</p>'+
+            '<p class="field-hint" id="author-error" style="color:var(--like)"></p>'+
+            '<div class="modal-actions">'+
+              '<button type="button" class="btn btn-quiet" data-action="'+(runtime.authorSetup?'cancel-setup':'close-modal')+'">Cancel</button>'+
+              '<button type="submit" class="btn btn-primary">'+(runtime.authorSetup?'Set new PIN':'Create account')+'</button></div>'+
+          '</form></div></div>';
+      }
+
+      /* Every day after that: the PIN, on a pad you can actually hit. */
+      var pin=runtime.pin||'';
+      var locked=runtime.pinLock&&runtime.pinLock>Date.now();
+      return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:360px">'+
+        '<span class="label label-ai">Author</span>'+
+        '<h2>'+(backend.authorName?'Hello, '+esc(backend.authorName):'Enter your PIN')+'</h2>'+
+        '<p class="modal-sub" style="margin-bottom:14px">'+(locked
+          ? 'Too many wrong tries. Try again in '+lockWait(runtime.pinLock)+'.'
+          : 'Your PIN unlocks writing, editing and styling.')+'</p>'+
+        (locked?'':pinPad(pin.length,4))+
+        '<p class="pin-error" id="author-error">'+esc(runtime.pinError||'')+'</p>'+
+        '<div class="modal-actions" style="justify-content:space-between">'+
+          '<button type="button" class="btn btn-quiet btn-sm" data-action="close-modal">Cancel</button>'+
+          '<button type="button" class="btn btn-primary" data-action="pin-submit"'+
+            (pin.length>=4&&!locked?'':' disabled')+'>Sign in</button></div>'+
+        '<p class="pin-note"><button type="button" class="linkish" data-action="start-setup">'+
+          'Forgotten it? Reset with the setup key</button></p>'+
         '</div></div>';
     }
     var store=backend.storage||{};
+    if(runtime.changePin){
+      return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:420px">'+
+        '<span class="label label-ai">Author</span><h2>Change your PIN</h2>'+
+        '<p class="modal-sub">You will stay signed in here. Any other device you have used will need the new PIN.</p>'+
+        '<form id="change-pin-form">'+
+          '<div class="field"><label for="cp-old">Current PIN</label>'+
+            '<input type="password" id="cp-old" name="currentPin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<div class="field"><label for="cp-new">New PIN</label>'+
+            '<input type="password" id="cp-new" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<div class="field"><label for="cp-new2">Type it again</label>'+
+            '<input type="password" id="cp-new2" name="pin2" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" required autocomplete="off"></div>'+
+          '<p class="field-hint" id="author-error" style="color:var(--like)"></p>'+
+          '<div class="modal-actions">'+
+            '<button type="button" class="btn btn-quiet" data-action="cancel-change-pin">Cancel</button>'+
+            '<button type="submit" class="btn btn-primary">Save new PIN</button></div>'+
+        '</form></div></div>';
+    }
     return '<div class="scrim" data-action="scrim-close"><div class="modal" style="max-width:450px">'+
       '<span class="label label-ai">Author</span><h2>Settings</h2>'+
-      '<p class="modal-sub">Signed in on this device. Saving to '+
-        esc(store.kind==='kv'?'the connected KV store':store.kind==='file'?'a file on the server':'nothing — this copy is not saved')+'.</p>'+
+      '<p class="modal-sub">Signed in'+(backend.authorName?' as '+esc(backend.authorName):'')+' on this device. Saving to '+
+        esc(store.kind==='kv'?'the connected database':store.kind==='file'?'a file on the server':'nothing — this copy is not saved')+'.</p>'+
       '<form id="author-settings-form">'+
         '<div class="field"><label for="site-name">Site title</label><input type="text" id="site-name" name="name" maxlength="60" value="'+esc(state.site.name)+'"></div>'+
         '<div class="field"><label for="site-byline">Subtitle</label><input type="text" id="site-byline" name="byline" maxlength="80" value="'+esc(state.site.byline)+'"></div>'+
         '<div class="modal-actions" style="justify-content:space-between">'+
-          '<button type="button" class="btn btn-quiet btn-sm" data-action="exit-author">Sign out</button>'+
-          '<button type="submit" class="btn btn-primary">Save</button></div>'+
-      '</form></div></div>';
+          '<button type="button" class="btn btn-outline btn-sm" data-action="change-pin">Change PIN</button>'+
+          '<div style="display:flex;gap:8px">'+
+            '<button type="button" class="btn btn-quiet" data-action="exit-author">Sign out</button>'+
+            '<button type="submit" class="btn btn-primary">Save</button></div></div>'+
+      '</form>'+
+      '<p class="pin-note" style="text-align:left;margin-top:16px">'+
+        '<button type="button" class="linkish" data-action="signout-everywhere">Sign out on every device</button>'+
+        ' — do this if you think someone else knows the PIN.</p>'+
+      '</div></div>';
   }
   if(!runtime.authorMode){
     var has=!!state.site.pinHash;
@@ -2361,6 +2499,7 @@ function renderOverlay(){
   if(runtime.modal){ var f=root.querySelector('input,textarea,button'); if(f) f.focus(); }
 }
 function closeModal(){
+  runtime.pin=''; runtime.pinError=''; runtime.authorSetup=false; runtime.changePin=false;
   if(runtime.modal&&runtime.modal.type==='picker'&&runtime.picker&&runtime.picker.mode==='draft'){
     runtime.picker=null;
     runtime.modal={type:'editor',id:runtime.editingId||null};
@@ -2450,6 +2589,128 @@ function deleteComment(pid,cid){
   render(); persist({kind:'comment:delete',id:pid,commentId:cid});
 }
 function setErr(id,m){ var e=document.getElementById(id); if(e) e.textContent=m; }
+
+/* ---------------------------------------------------------- the account --- */
+
+function lockWait(until){
+  var s=Math.max(0,Math.ceil((until-Date.now())/1000));
+  if(s<60) return s+' seconds';
+  var m=Math.ceil(s/60);
+  if(m<60) return m+(m===1?' minute':' minutes');
+  var h=Math.round(m/60);
+  return h+(h===1?' hour':' hours');
+}
+function pinPush(d){
+  if(runtime.pinBusy) return;
+  if(runtime.pin.length>=8) return;
+  runtime.pin+=String(d); runtime.pinError='';
+  renderOverlay();
+}
+function pinBack(){
+  if(runtime.pinBusy) return;
+  runtime.pin=runtime.pin.slice(0,-1); runtime.pinError='';
+  renderOverlay();
+}
+/* The pad is for tapping; a keyboard should still work for anyone who prefers
+   one. Only live while the PIN screen is the thing on screen. */
+function onPinKeydown(e){
+  if(!runtime.modal||runtime.modal.type!=='author') return;
+  if(backend.mode!=='api'||runtime.authorMode||runtime.authorSetup) return;
+  if(!backend.accountConfigured) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  var t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') return;
+  if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinPush(e.key); }
+  else if(e.key==='Backspace'){ e.preventDefault(); pinBack(); }
+  else if(e.key==='Enter'){ e.preventDefault(); submitPin(); }
+}
+async function submitPin(){
+  if(runtime.pinBusy||runtime.pin.length<4) return;
+  runtime.pinBusy=true;
+  var pin=runtime.pin;
+  try{
+    var out=await apiFetch('/auth/session',{method:'POST',body:{pin:pin,device:deviceLabel()}});
+    backend.token=out.token; saveToken(out.token);
+    backend.authorName=out.name||null; backend.accountConfigured=true;
+    runtime.pin=''; runtime.pinError=''; runtime.pinLock=0;
+    runtime.authorMode=true; runtime.modal=null; runtime.pinBusy=false;
+    render(); showToast('Signed in'+(out.name?', '+out.name:''));
+  }catch(err){
+    runtime.pinBusy=false; runtime.pin='';
+    if(err&&err.status===429){
+      /* The server decides how long; we only display it. */
+      runtime.pinLock=Date.now()+((err.retryAfter||900)*1000);
+      runtime.pinError='';
+    } else {
+      runtime.pinError=(err&&err.message)||'That did not work.';
+    }
+    renderOverlay();
+  }
+}
+function deviceLabel(){
+  try{
+    var ua=navigator.userAgent||'';
+    if(/iPhone/.test(ua)) return 'iPhone';
+    if(/iPad/.test(ua)) return 'iPad';
+    if(/Android/.test(ua)) return 'Android';
+    if(/Mac OS X/.test(ua)) return 'Mac';
+    if(/Windows/.test(ua)) return 'Windows PC';
+  }catch(e){}
+  return 'a browser';
+}
+async function submitAuthorSetup(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  var key=(fd.get('key')||'').trim();
+  var pin=(fd.get('pin')||'').trim();
+  var pin2=(fd.get('pin2')||'').trim();
+  var name=(fd.get('name')||'').trim();
+  if(pin!==pin2){ setErr('author-error','The two PINs are different.'); return; }
+  var prev=backend.token;
+  backend.token=key;                                   /* the setup key, used once */
+  try{
+    var out=await apiFetch('/auth/setup',{method:'POST',auth:true,
+      body:{pin:pin,name:name,device:deviceLabel(),reset:!!runtime.authorSetup}});
+    backend.token=out.token; saveToken(out.token);      /* replaced by a session immediately */
+    backend.authorName=out.name||null; backend.accountConfigured=true;
+    runtime.authorSetup=false; runtime.authorMode=true; runtime.modal=null;
+    render();
+    showToast(out.reset?'PIN changed':'Account created — your PIN works from now on');
+  }catch(err){
+    backend.token=prev;
+    setErr('author-error', err&&err.status===401
+      ? 'That setup key is not right.'
+      : (err&&err.message)||'Could not create the account.');
+  }
+}
+async function submitApiChangePin(e){
+  e.preventDefault();
+  var fd=new FormData(e.target);
+  var cur=(fd.get('currentPin')||'').trim();
+  var pin=(fd.get('pin')||'').trim();
+  var pin2=(fd.get('pin2')||'').trim();
+  if(pin!==pin2){ setErr('author-error','The two PINs are different.'); return; }
+  try{
+    var out=await apiFetch('/auth/pin',{method:'POST',auth:true,
+      body:{currentPin:cur,pin:pin,device:deviceLabel()}});
+    backend.token=out.token; saveToken(out.token);
+    runtime.changePin=false; renderOverlay();
+    showToast('PIN changed — other devices are signed out');
+  }catch(err){
+    setErr('author-error',(err&&err.message)||'Could not change the PIN.');
+  }
+}
+async function signOut(everywhere){
+  if(backend.mode==='api'&&backend.token){
+    try{ await apiFetch('/auth/session'+(everywhere?'?all=true':''),{method:'DELETE',auth:true}); }
+    catch(e){}                       /* the local token goes either way */
+  }
+  backend.token=null; saveToken(null);
+  runtime.authorMode=false; runtime.modal=null; runtime.changePin=false; runtime.pin='';
+  render();
+  if(everywhere) showToast('Signed out everywhere');
+}
+
 async function submitAuthorToken(e){
   e.preventDefault();
   var token=(new FormData(e.target).get('token')||'').trim();
@@ -2566,13 +2827,25 @@ function onClick(e){
     case 'a11y-contrast': toggleContrast(); break;
     case 'a11y-motion': toggleMotion(); break;
     case 'toggle-theme': toggleTheme(); break;
-    case 'open-author': runtime.modal={type:'author'}; renderOverlay(); break;
-    case 'change-pin': runtime.modal={type:'changePin'}; renderOverlay(); break;
+    case 'open-author':
+      runtime.pin=''; runtime.pinError=''; runtime.authorSetup=false; runtime.changePin=false;
+      runtime.modal={type:'author'}; renderOverlay(); break;
+    case 'change-pin':
+      if(backend.mode==='api'){ runtime.changePin=true; renderOverlay(); }
+      else { runtime.modal={type:'changePin'}; renderOverlay(); }
+      break;
+    case 'cancel-change-pin': runtime.changePin=false; renderOverlay(); break;
+    case 'start-setup':
+      runtime.authorSetup=true; runtime.pin=''; runtime.pinError=''; renderOverlay(); break;
+    case 'cancel-setup':
+      runtime.authorSetup=false; runtime.pinError=''; renderOverlay(); break;
+    case 'pin-key': pinPush(btn.dataset.key); break;
+    case 'pin-back': pinBack(); break;
+    case 'pin-clear': runtime.pin=''; runtime.pinError=''; renderOverlay(); break;
+    case 'pin-submit': submitPin(); break;
+    case 'signout-everywhere': signOut(true); break;
     case 'rename-site': runtime.modal={type:'rename'}; renderOverlay(); break;
-    case 'exit-author':
-      runtime.authorMode=false; runtime.modal=null;
-      if(backend.mode==='api'){ backend.token=null; saveToken(null); }
-      render(); break;
+    case 'exit-author': signOut(false); break;
     case 'focus-search':
       setView('library');
       requestAnimationFrame(function(){ var i=document.getElementById('q'); if(i){ i.focus(); i.select(); } });
@@ -2582,11 +2855,12 @@ function onClick(e){
 function onSubmit(e){
   var id=e.target.id;
   if(id==='author-token-form') return submitAuthorToken(e);
+  if(id==='author-setup-form') return submitAuthorSetup(e);
   if(id==='poem-editor-form') submitEditor(e);
   else if(id==='comment-form'){ writable?submitComment(e):e.preventDefault(); }
   else if(id==='author-form') submitAuthor(e);
   else if(id==='author-settings-form') submitAuthorSettings(e);
-  else if(id==='change-pin-form') submitChangePin(e);
+  else if(id==='change-pin-form'){ backend.mode==='api'?submitApiChangePin(e):submitChangePin(e); }
   else if(id==='rename-form') submitRename(e);
 }
 function onChange(e){ if(e.target.id==='sort'){ runtime.sort=e.target.value; renderIndexList(); } }
@@ -2615,7 +2889,9 @@ function onKeydown(e){
   if(e.key==='Escape'){
     if(runtime.modal) closeModal();
     else if(runtime.popover){ runtime.popover=null; renderMasthead(); }
+    return;
   }
+  onPinKeydown(e);
 }
 
 /* =================================================================
@@ -2754,12 +3030,20 @@ var API={
   isAuthor:function(){ return !!runtime.authorMode; },
   unlock:function(secret){
     if(backend.mode==='api'){
+      /* A PIN opens a session; anything longer is treated as the master token. */
+      if(/^\d{4,8}$/.test(String(secret))){
+        return apiFetch('/auth/session',{method:'POST',body:{pin:String(secret),device:deviceLabel()}})
+          .then(function(out){
+            backend.token=out.token; saveToken(out.token);
+            backend.authorName=out.name||null; runtime.authorMode=true; render(); return true;
+          });
+      }
       backend.token=String(secret);
       return apiFetch('/export',{auth:true}).then(function(){
         saveToken(backend.token); runtime.authorMode=true; render(); return true;
       }).catch(function(err){
         backend.token=null;
-        throw apiError('bad_token','That author token is not right.',401);
+        throw apiError('bad_token','That is neither a valid PIN nor the author token.',401);
       });
     }
     if(!state.site.pinHash) throw apiError('no_pin','No PIN is set yet — set one from the lock button first.',409);

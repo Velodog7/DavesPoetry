@@ -34,6 +34,7 @@ Put these at the **root** of the repo:
 api/index.js          ← Vercel finds this automatically
 lib/api.js
 lib/store.js
+lib/auth.js
 lib/poetry-engine.js
 data/seed.json        ← the starting poems
 index.html            ← the website
@@ -127,6 +128,39 @@ so a fresh deploy is never wide open to the internet.
 Redeploy after adding environment variables; Vercel only picks them up on a new
 build.
 
+### 4. Hand the site to the poet
+
+`AUTHOR_TOKEN` is the **setup key**, not the day-to-day password. He uses it
+exactly once:
+
+1. He opens the site and presses the lock button.
+2. **Create your account** — his name, the setup key, and a PIN he chooses.
+3. From then on it is just the PIN, on a keypad built for tapping.
+
+After that he never needs the token again, and you never need to give him a
+48-character hex string to type.
+
+**Why a setup key at all?** The site is public. An open "create the author
+account" button belongs to whoever finds the page first — and that is not
+necessarily the person it was built for.
+
+**A four-digit PIN on a public page** is only safe because guessing is made
+expensive, so the server does three things and none of them are optional:
+
+- The PIN is never stored — only a salted **scrypt** hash of it.
+- Five wrong tries in fifteen minutes lock sign-in for 15 minutes, then an
+  hour, then four. Ten thousand guesses stop being a weekend's work.
+- Obvious PINs (`1234`, `0000`, straight runs, repeated digits) are refused at
+  the point of choosing.
+
+Signing in issues a **session token**, good for 90 days on that device, so the
+PIN itself travels once rather than on every request. Changing the PIN — or
+resetting it with the setup key — revokes every session everywhere.
+
+**If he forgets the PIN**, the sign-in screen offers *"Forgotten it? Reset with
+the setup key"*. That is what `AUTHOR_TOKEN` is for. Keep it somewhere you can
+find it.
+
 ---
 
 ## Environment variables
@@ -155,7 +189,7 @@ AUTHOR_TOKEN=dev-token node server.js
 It uses the file store on disk, so your local poems persist normally.
 
 ```bash
-npm run smoke        # 33 checks against every route
+npm run smoke        # 65 checks against every route, sign-in included
 npm run test:store   # 19 checks on storage detection, prefixes included
 ```
 
@@ -169,6 +203,10 @@ detail is in `openapi.json`.
 | | Path | Auth |
 |---|---|---|
 | `GET` | `/api/health` | — |
+| `GET` | `/api/auth` | — |
+| `POST` | `/api/auth/setup` | 🔑 setup key |
+| `GET` `POST` `DELETE` | `/api/auth/session` · `?all=true` | PIN to open one |
+| `POST` | `/api/auth/pin` | 🔒 + current PIN |
 | `GET` | `/api/poems` · `?search= &form= &tag= &highlighted=true &sort= &limit= &offset=` | — |
 | `POST` | `/api/poems` | 🔒 |
 | `GET` `PATCH` `DELETE` | `/api/poems/:id` | 🔒 to change |
@@ -238,14 +276,25 @@ API on another domain, add this to the `<head>`:
 
 ### Signing in to write
 
-On the API version the lock button asks for the **author token**, not a PIN —
-the same `AUTHOR_TOKEN` you set in the environment. It is kept in that browser's
-local storage, so your dad signs in once per device. Sign out clears it.
+The lock button shows one of three things, depending on where it finds itself:
+
+| | What it asks for |
+|---|---|
+| No account yet, setup key available | Name, setup key, and a PIN to choose |
+| Account exists | The PIN, on a keypad |
+| No account and no `AUTHOR_TOKEN` | An explanation of what the owner needs to do |
+
+The session token lives in that browser's local storage, so he signs in once
+per device. On load the page asks the server whether that token is still
+good, rather than trusting what it finds locally — so a session revoked from
+another device really is gone.
 
 Readers need nothing: liking and commenting are open to anyone.
 
-From the console, `DadsVerses.backend()` reports which mode the page is in, and
-`DadsVerses.reload()` pulls fresh data from the server.
+From the console, `DadsVerses.backend()` reports which mode the page is in,
+`DadsVerses.unlock("4913")` signs in with a PIN (or with the master token, if
+you pass something that isn't 4–8 digits), and `DadsVerses.reload()` pulls
+fresh data from the server.
 
 ## A note on concurrency
 

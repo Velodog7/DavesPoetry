@@ -143,6 +143,90 @@ async function run() {
   r = await call('POST', '/import', backup, authed);
   check('imports a backup', r.status === 200 && r.data.imported === backup.poems.length);
 
+  /* ------------------------------------------------------ the account --- */
+  console.log('\nauthor account');
+
+  r = await call('GET', '/auth');
+  check('reports no account yet', r.status === 200 && r.data.configured === false);
+
+  r = await call('POST', '/auth/setup', { pin: '4913' });
+  check('setup refuses without the setup key', r.status === 401);
+
+  r = await call('POST', '/auth/setup', { pin: '1234' }, authed);
+  check('rejects a common PIN', r.status === 400 && r.data.error === 'weak_pin');
+  r = await call('POST', '/auth/setup', { pin: '5678' }, authed);
+  check('rejects a straight run of digits', r.status === 400);
+  r = await call('POST', '/auth/setup', { pin: '7777' }, authed);
+  check('rejects a repeated digit', r.status === 400);
+  r = await call('POST', '/auth/setup', { pin: '12a4' }, authed);
+  check('rejects a non-numeric PIN', r.status === 400);
+
+  r = await call('POST', '/auth/setup', { pin: '4913', name: 'Dave' }, authed);
+  check('creates the account with the setup key', r.status === 201 && !!r.data.token);
+  check('names the author', r.data.name === 'Dave');
+  const session = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
+
+  r = await call('GET', '/auth');
+  check('now reports an account', r.status === 200 && r.data.configured === true && r.data.name === 'Dave');
+  check('never reveals the hash', JSON.stringify(r.data).indexOf('hash') < 0);
+
+  r = await call('POST', '/auth/setup', { pin: '8261' }, authed);
+  check('will not silently replace an existing account', r.status === 409);
+
+  r = await call('GET', '/export', null, session);
+  check('the session can do author work', r.status === 200);
+  check('the export carries no account data', r.status === 200 && r.data.auth === undefined);
+
+  r = await call('POST', '/auth/session', { pin: '4913' });
+  check('signs in with the PIN', r.status === 200 && !!r.data.token);
+  const session2 = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
+
+  r = await call('POST', '/auth/session', { pin: '9111' });
+  check('rejects a wrong PIN', r.status === 401 && r.data.error === 'wrong_pin');
+  check('counts down the remaining tries', r.data.attemptsRemaining === 4);
+
+  r = await call('GET', '/auth/session', null, session2);
+  check('confirms a live session', r.status === 200 && r.data.valid === true);
+  r = await call('DELETE', '/auth/session', null, session2);
+  check('signs out', r.status === 200);
+  r = await call('GET', '/auth/session', null, session2);
+  check('the signed-out session is dead', r.status === 200 && r.data.valid === false);
+  r = await call('GET', '/export', null, session2);
+  check('and cannot do author work', r.status === 401);
+
+  /* Lock the account, then confirm the master token is still a way back in. */
+  for (let i = 0; i < 5; i++) await call('POST', '/auth/session', { pin: '9112' });
+  r = await call('POST', '/auth/session', { pin: '4913' });
+  check('locks after repeated wrong PINs', r.status === 429 && r.data.error === 'locked');
+  check('says how long the wait is', typeof r.data.retryAfter === 'number' && r.data.retryAfter > 0);
+  r = await call('GET', '/export', null, authed);
+  check('the master token still works while locked', r.status === 200);
+
+  r = await call('POST', '/auth/setup', { pin: '6142', reset: true }, authed);
+  check('the setup key resets a forgotten PIN', r.status === 200 && r.data.reset === true);
+  const session3 = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
+  r = await call('POST', '/auth/session', { pin: '6142' });
+  check('the reset clears the lockout', r.status === 200);
+  r = await call('GET', '/export', null, session);
+  check('the reset killed the older sessions', r.status === 401);
+
+  r = await call('POST', '/auth/pin', { currentPin: '9113', pin: '5391' }, session3);
+  check('changing the PIN needs the current one', r.status === 401);
+  r = await call('POST', '/auth/pin', { currentPin: '6142', pin: '5391' }, session3);
+  check('changes the PIN', r.status === 200 && !!r.data.token);
+  const session4 = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
+  r = await call('POST', '/auth/session', { pin: '5391' });
+  check('the new PIN works', r.status === 200);
+  r = await call('POST', '/auth/session', { pin: '6142' });
+  check('the old PIN does not', r.status === 401);
+
+  r = await call('POST', '/import', { poems: [], auth: { pin: { hash: 'x', salt: 'y' } } }, session4);
+  check('import is not a way to overwrite the account', r.status === 200);
+  r = await call('POST', '/auth/session', { pin: '5391' });
+  check('the account survived that import', r.status === 200);
+
+  await call('POST', '/import', backup, session4);   /* put the poems back */
+
   console.log('\ncleanup');
   r = await call('DELETE', '/poems/' + id, null, authed);
   check('deletes a poem', r.status === 200 && r.data.deleted === true);
