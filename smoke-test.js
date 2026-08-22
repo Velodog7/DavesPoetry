@@ -166,8 +166,14 @@ async function run() {
       { id: 'sample-b', title: 'Edited Example', body: 'A line.\nAnother line.', sample: false }
     ]
   }, authed);
+  /* The seed ships no examples, so an unowned site must not serve the ones
+     already sitting in the store — not "eventually", now. */
   r = await call('GET', '/poems/sample-a');
-  check('an example poem is in place', r.status === 200 && r.data.sample === true);
+  check('a shipped-none deploy hides a stored example immediately', r.status === 404);
+  r = await call('GET', '/poems/sample-b');
+  check('but keeps one the poet has touched', r.status === 200);
+  r = await call('GET', '/poems');
+  check('and the list agrees', r.data.poems.every(p => !p.sample));
 
   r = await call('POST', '/auth/setup', { pin: '4913' });
   check('setup refuses without the setup key', r.status === 401);
@@ -184,7 +190,7 @@ async function run() {
   r = await call('POST', '/auth/setup', { pin: '4913', name: 'Dave' }, authed);
   check('creates the account with the setup key', r.status === 201 && !!r.data.token);
   check('names the author', r.data.name === 'Dave');
-  check('clears the untouched examples', r.data.clearedSamples === 1);
+  check('nothing left to clear at setup', r.data.clearedSamples === 0);
   const session = { Authorization: `Bearer ${r.data.token}`, 'Content-Type': 'application/json' };
 
   r = await call('GET', '/poems/sample-a');
