@@ -507,6 +507,7 @@
     margin:8px 0; white-space:pre-line;
   }
   .cr-why{ display:block; font-size:var(--fs-cap); line-height:1.65; color:var(--ink-2); max-width:60ch; }
+  .cr-body em{ font-style:italic; }
   .cr-stale{
     font-size:var(--fs-cap); line-height:1.55; color:var(--ink); background:var(--accent-wash);
     border-radius:var(--r-md); padding:10px 14px; margin-bottom:16px;
@@ -1498,6 +1499,11 @@ function proseFigures(a){
 /* The written reading — one essay per poem, composed against a specific draft.
    Everything below it is arithmetic; this is the part that actually read the
    thing. When there is none, say so rather than manufacturing filler. */
+/* Escape first, then allow *emphasis* — so a poem's own asterisk can never
+   become markup, and the readings can italicise a word the way prose does. */
+function crText(t){
+  return esc(t).replace(/\*([^*]+)\*/g,'<em>$1</em>');
+}
 function closeReadingHtml(p){
   var r=p.reading;
   if(!r){
@@ -1513,14 +1519,14 @@ function closeReadingHtml(p){
     h+='<p class="cr-stale">This poem has been revised since the reading below was written, '+
        'so some of it may now point at lines that have changed.</p>';
   }
-  h+='<p class="cr-standfirst">'+esc(r.standfirst)+'</p>';
-  (r.paragraphs||[]).forEach(function(para){ h+='<p class="cr-para">'+esc(para)+'</p>'; });
+  h+='<p class="cr-standfirst">'+crText(r.standfirst)+'</p>';
+  (r.paragraphs||[]).forEach(function(para){ h+='<p class="cr-para">'+crText(para)+'</p>'; });
   if(r.craft&&r.craft.length){
     h+='<h4 class="cr-h">Three things it does</h4><ol class="cr-craft">';
     r.craft.forEach(function(c){
       h+='<li><span class="cr-move">'+esc(c.move)+'</span>'+
          '<blockquote class="cr-line">'+esc(c.line)+'</blockquote>'+
-         '<span class="cr-why">'+esc(c.why)+'</span></li>';
+         '<span class="cr-why">'+crText(c.why)+'</span></li>';
     });
     h+='</ol>';
   }
