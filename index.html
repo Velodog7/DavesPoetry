@@ -373,6 +373,26 @@
     line-height:var(--poem-leading, 1.85); white-space:pre-wrap;
     text-align:var(--poem-align, left); color:var(--ink); max-width:46ch; margin:0 auto;
   }
+  /* The poet's own emphasis. Kept restrained — a poem is not a web page. */
+  .verse em{ font-style:italic; }
+  .verse strong{ font-weight:700; }
+  .verse s{ text-decoration:line-through; text-decoration-thickness:1px; opacity:.72; }
+
+  /* --- the formatting bar over the poem field --- */
+  .fmtbar{ display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+  .fmt-btn{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    min-width:40px; height:36px; padding:0 10px; border-radius:var(--r-md);
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    font-family:var(--f-verse); font-size:1rem; line-height:1;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background var(--dur-s) ease, border-color var(--dur-s) ease, transform var(--dur-s) var(--spring);
+  }
+  .fmt-btn:hover{ background:var(--surface-2); border-color:var(--ink-3); }
+  .fmt-btn:active{ transform:scale(.94); background:var(--accent-wash); border-color:var(--accent); }
+  .fmt-btn:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .fmt-btn.is-quiet{ font-family:var(--f-ui); font-size:var(--fs-micro); font-weight:600; color:var(--ink-2); }
+  @media (prefers-reduced-motion: reduce){ .fmt-btn{ transition:none; } .fmt-btn:active{ transform:none; } }
 
   /* iOS inset grouped list */
   .poem-rail{ position:sticky; top:80px; display:flex; flex-direction:column; gap:14px; }
@@ -942,7 +962,7 @@ function timeAgo(iso){
   return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 function excerpt(body,n){
-  var lines=body.split(/\r?\n/).filter(function(l){ return l.trim()!==''; });
+  var lines=stripMarks(body).split(/\r?\n/).filter(function(l){ return l.trim()!==''; });
   return lines.slice(0,n||4).join('\n');
 }
 function simpleHash(s){ var h=5381; for(var i=0;i<s.length;i++){ h=((h*33)^s.charCodeAt(i))>>>0; } return h.toString(36); }
@@ -953,20 +973,81 @@ function listJoin(arr,conj){
   if(arr.length===2) return arr[0]+' '+conj+' '+arr[1];
   return arr.slice(0,-1).join(', ')+', '+conj+' '+arr[arr.length-1];
 }
+/* ================= INLINE FORMATTING =================
+   The poet writes in a plain textarea, so emphasis has to live in the text
+   itself: *italic*, **bold**, ~~struck through~~, and \* for a literal marker.
+
+   The rule that keeps everything else working: nothing that counts, indexes or
+   analyses a poem ever sees the markers. Highlights are stored as word
+   positions, and a word's position must not change because someone italicised
+   it. So parseMarks() returns the plain text plus a per-character style map,
+   and every other function in this file works from the plain text. */
+var FMT_EM=1, FMT_STRONG=2, FMT_STRIKE=4;
+
+/* Two passes. The first decides which markers are genuinely paired; the second
+   builds the text. An unpaired marker stays as literal text — a poem is
+   allowed to contain a lone asterisk without turning the rest of it italic. */
+function parseMarks(body){
+  var src=String(body==null?'':body);
+  var marks=[], stack=[], i=0;
+
+  while(i<src.length){
+    var c=src[i];
+    if(c==='\\' && i+1<src.length){ i+=2; continue; }      /* escaped: skip both */
+    var two=src.substr(i,2), tok=null;
+    if(two==='**') tok={s:'**',bit:FMT_STRONG,len:2};
+    else if(two==='~~') tok={s:'~~',bit:FMT_STRIKE,len:2};
+    else if(c==='*') tok={s:'*',bit:FMT_EM,len:1};
+    if(tok){
+      var openAt=-1;
+      for(var k=stack.length-1;k>=0;k--){ if(stack[k].bit===tok.bit){ openAt=k; break; } }
+      if(openAt>=0){
+        var open=stack.splice(openAt,1)[0];
+        marks.push({at:open.at,len:open.len,bit:open.bit,close:false});
+        marks.push({at:i,len:tok.len,bit:tok.bit,close:true});
+      } else {
+        stack.push({at:i,len:tok.len,bit:tok.bit});
+      }
+      i+=tok.len; continue;
+    }
+    i++;
+  }
+  var paired={};
+  marks.forEach(function(m){ paired[m.at]=m; });
+
+  var plain='', fmt=[], active=0, map={};
+  marks.forEach(function(m){ map[m.at]=m; });
+  i=0;
+  while(i<src.length){
+    if(src[i]==='\\' && i+1<src.length){
+      plain+=src[i+1]; fmt.push(active); i+=2; continue;
+    }
+    var m=map[i];
+    if(m){ active = m.close ? (active & ~m.bit) : (active | m.bit); i+=m.len; continue; }
+    plain+=src[i]; fmt.push(active); i++;
+  }
+  return { plain:plain, fmt:fmt };
+}
+function stripMarks(body){ return parseMarks(body).plain; }
+/* True when the text carries any formatting the poet actually applied. */
+function hasMarks(body){ return stripMarks(body)!==String(body==null?'':body); }
+
 /* ================= AUTHOR HIGHLIGHTS ================= */
 var WORD_RE=/[A-Za-z0-9À-ɏ][A-Za-z0-9'’À-ɏ]*/g;
 /* Split a poem into word tokens (indexed) and the gaps between them. Gaps keep
-   newlines and punctuation, so re-joining reproduces the poem exactly. */
-function tokenizePoem(body){
+   newlines and punctuation, so re-joining reproduces the poem exactly.
+   Always operates on the plain text — see parseMarks above. */
+function tokenizePlain(plain){
   var re=new RegExp(WORD_RE.source,'g'), toks=[], last=0, m, wi=0;
-  while((m=re.exec(body))!==null){
-    if(m.index>last) toks.push({t:'gap',s:body.slice(last,m.index)});
-    toks.push({t:'word',s:m[0],i:wi++});
+  while((m=re.exec(plain))!==null){
+    if(m.index>last) toks.push({t:'gap',s:plain.slice(last,m.index),a:last,b:m.index});
+    toks.push({t:'word',s:m[0],i:wi++,a:m.index,b:m.index+m[0].length});
     last=m.index+m[0].length;
   }
-  if(last<body.length) toks.push({t:'gap',s:body.slice(last)});
+  if(last<plain.length) toks.push({t:'gap',s:plain.slice(last),a:last,b:plain.length});
   return toks;
 }
+function tokenizePoem(body){ return tokenizePlain(stripMarks(body)); }
 function poemWords(body){
   return tokenizePoem(body).filter(function(t){ return t.t==='word'; });
 }
@@ -1005,20 +1086,95 @@ function remapHighlights(oldBody,newBody,indices){
   });
   return out.sort(function(a,b){ return a-b; });
 }
+/* Take a slice of the plain text and wrap each run of identical styling. The
+   fmt map is per-character, so a word that is half italic still comes out
+   right, and the word itself is never split by the markers. */
+function fmtSlice(plain,fmt,a,b){
+  var out='', i=a;
+  while(i<b){
+    var f=fmt[i]||0, j=i;
+    while(j<b && (fmt[j]||0)===f) j++;
+    var piece=esc(plain.slice(i,j));
+    if(f&FMT_STRIKE) piece='<s>'+piece+'</s>';
+    if(f&FMT_EM)     piece='<em>'+piece+'</em>';
+    if(f&FMT_STRONG) piece='<strong>'+piece+'</strong>';
+    out+=piece; i=j;
+  }
+  return out;
+}
 /* Poem markup. mode 'read' wraps highlights in <mark>; 'pick' makes every word tappable. */
 function renderVerseHtml(body,indices,mode){
+  var pm=parseMarks(body);
   var set={}; (indices||[]).forEach(function(i){ set[i]=1; });
   var n=0;
-  return tokenizePoem(body).map(function(tk){
-    if(tk.t==='gap') return esc(tk.s);
+  return tokenizePlain(pm.plain).map(function(tk){
+    var inner=fmtSlice(pm.plain,pm.fmt,tk.a,tk.b);
+    if(tk.t==='gap') return inner;
     var on=!!set[tk.i];
     if(mode==='pick'){
       return '<span class="wtok'+(on?' on':'')+'" data-wi="'+tk.i+'" role="button" tabindex="0"'+
-        ' aria-pressed="'+on+'" aria-label="'+esc(tk.s)+'">'+esc(tk.s)+'</span>';
+        ' aria-pressed="'+on+'" aria-label="'+esc(tk.s)+'">'+inner+'</span>';
     }
-    if(!on) return esc(tk.s);
-    return '<mark class="hl" style="--d:'+(n++*45)+'ms">'+esc(tk.s)+'</mark>';
+    if(!on) return inner;
+    return '<mark class="hl" style="--d:'+(n++*45)+'ms">'+inner+'</mark>';
   }).join('');
+}
+
+/* ================= THE FORMATTING BAR =================
+   Buttons over the poem textarea. Each one wraps the selection in its markers,
+   or unwraps it if it is already wrapped, so pressing twice undoes it — which
+   is what anyone expects from a bold button. */
+var FMT_BUTTONS=[
+  { id:'strong', mark:'**', label:'Bold',          key:'B', html:'<b>B</b>' },
+  { id:'em',     mark:'*',  label:'Italic',        key:'I', html:'<i>I</i>' },
+  { id:'strike', mark:'~~', label:'Strikethrough', key:'',  html:'<s>S</s>' }
+];
+function fmtBarHtml(){
+  var h='<div class="fmtbar" role="group" aria-label="Text formatting">';
+  FMT_BUTTONS.forEach(function(b){
+    h+='<button type="button" class="fmt-btn" data-action="fmt" data-mark="'+b.mark+'" '+
+       'title="'+esc(b.label)+(b.key?' (⌘'+b.key+')':'')+'" aria-label="'+esc(b.label)+'">'+b.html+'</button>';
+  });
+  h+='<button type="button" class="fmt-btn is-quiet" data-action="fmt-clear" '+
+     'title="Remove formatting" aria-label="Remove formatting">Clear</button>';
+  return h+'</div>';
+}
+/* Wrap or unwrap the current selection. Works on the textarea value directly so
+   the poet's undo history in the browser still behaves. */
+function applyFmt(mark){
+  var ta=document.getElementById('ed-body'); if(!ta) return;
+  var v=ta.value, a=ta.selectionStart, b=ta.selectionEnd;
+
+  if(a===b){                                   /* nothing selected: take the word under the cursor */
+    var s=a, e=a;
+    while(s>0 && /\S/.test(v[s-1])) s--;
+    while(e<v.length && /\S/.test(v[e])) e++;
+    if(s===e) return;                          /* on whitespace — nothing to style */
+    a=s; b=e;
+  }
+  var sel=v.slice(a,b), n=mark.length, out, caretA, caretB;
+
+  if(sel.length>=2*n && sel.slice(0,n)===mark && sel.slice(-n)===mark){
+    out=sel.slice(n,-n); caretA=a; caretB=a+out.length;          /* unwrap inside */
+  } else if(v.slice(Math.max(0,a-n),a)===mark && v.slice(b,b+n)===mark){
+    a-=n; b+=n; out=sel; caretA=a; caretB=a+out.length;          /* unwrap around */
+  } else {
+    out=mark+sel+mark; caretA=a+n; caretB=a+n+sel.length;        /* wrap */
+  }
+  ta.setRangeText(out,a,b,'end');
+  ta.setSelectionRange(caretA,caretB);
+  ta.focus();
+  updateLiveEditor();
+}
+function clearFmt(){
+  var ta=document.getElementById('ed-body'); if(!ta) return;
+  var a=ta.selectionStart, b=ta.selectionEnd;
+  if(a===b){ a=0; b=ta.value.length; }         /* no selection: clean the whole poem */
+  var cleaned=stripMarks(ta.value.slice(a,b));
+  ta.setRangeText(cleaned,a,b,'end');
+  ta.setSelectionRange(a,a+cleaned.length);
+  ta.focus();
+  updateLiveEditor();
 }
 
 function defaultPoemStyle(){ return {font:'serif',size:1.22,leading:1.85,align:'left',accent:'#3B6FD4'}; }
@@ -1030,12 +1186,12 @@ function poemStyleVars(s){
 
 /* ================= LANGUAGE ANALYSIS ================= */
 function tokenize(text){
-  var m=(text.toLowerCase().match(/[a-z][a-z']*/g))||[];
+  var m=(stripMarks(text).toLowerCase().match(/[a-z][a-z']*/g))||[];
   return m.map(function(w){ return w.replace(/^'+|'+$/g,''); }).filter(Boolean);
 }
-function getLines(body){ return body.split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); }
+function getLines(body){ return stripMarks(body).split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); }
 function getStanzas(body){
-  return body.split(/\n\s*\n/).map(function(s){ return s.split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); })
+  return stripMarks(body).split(/\n\s*\n/).map(function(s){ return s.split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); })
     .filter(function(st){ return st.length; });
 }
 var IRREGULAR={};
@@ -2083,7 +2239,7 @@ function renderReader(){
       '</header>'+
       '<div class="poem-body-grid">'+
         '<div class="poem-sheet" style="--tint:'+p.style.accent+'"><p class="verse" style="'+poemStyleVars(p.style)+'">'+
-          (hlOn?renderVerseHtml(p.body,hl,'read'):esc(p.body))+'</p></div>'+
+          renderVerseHtml(p.body,hlOn?hl:[],'read')+'</p></div>'+
         '<aside class="poem-rail">'+
           '<div class="group">'+
             '<div class="group-row"><span class="label">Form</span><div class="group-val serif">'+esc(f.form)+'</div><div class="group-note">'+esc(cap(f.structure))+'</div></div>'+
@@ -2281,7 +2437,11 @@ function updateLiveEditor(){
   syncDraft();
   var d=runtime.draft;
   var prev=document.getElementById('live-preview');
-  if(prev) prev.textContent=excerpt(d.body,4)||'The poem will appear here…';
+  if(prev){
+    var raw=String(d.body||'').split(/\r?\n/).filter(function(l){ return l.trim()!==''; })
+      .slice(0,4).join('\n');
+    prev.innerHTML = raw ? renderVerseHtml(raw,[],'read') : 'The poem will appear here…';
+  }
   var fp=document.getElementById('live-form');
   if(fp) fp.innerHTML=formPanelHtml(d.body.trim()?classifyForm(d.body,d.title):null);
 }
@@ -2298,8 +2458,11 @@ function editorModal(){
         '<div class="field"><label for="ed-title">Title</label><input type="text" id="ed-title" name="title" value="'+esc(d.title)+'" required></div>'+
         '<div class="field" style="max-width:165px"><label for="ed-date">Date</label><input type="date" id="ed-date" name="date" value="'+esc(d.date)+'" required></div>'+
       '</div>'+
-      '<div class="field"><label for="ed-body">The poem</label><textarea id="ed-body" name="body" rows="12" required>'+esc(d.body)+'</textarea>'+
-        '<span class="field-hint">Leave a blank line between stanzas.</span></div>'+
+      '<div class="field"><label for="ed-body">The poem</label>'+
+        fmtBarHtml()+
+        '<textarea id="ed-body" name="body" rows="12" required>'+esc(d.body)+'</textarea>'+
+        '<span class="field-hint">Leave a blank line between stanzas. '+
+        'Select a word and press a button above — or use ⌘B, ⌘I.</span></div>'+
       '<div class="field"><label>Recognised form</label><div class="preview-sheet" style="padding:14px 16px" id="live-form">'+
         formPanelHtml(liveForm)+'</div><span class="field-hint">Detected from the text as you write.</span></div>'+
       '<div class="field"><label for="ed-blurb">A note about this poem</label>'+
@@ -2963,6 +3126,8 @@ function onClick(e){
     case 'a11y-contrast': toggleContrast(); break;
     case 'a11y-motion': toggleMotion(); break;
     case 'toggle-theme': toggleTheme(); break;
+    case 'fmt': applyFmt(btn.dataset.mark); break;
+    case 'fmt-clear': clearFmt(); break;
     case 'open-author':
       runtime.pin=''; runtime.pinError=''; runtime.authorSetup=false; runtime.changePin=false;
       runtime.modal={type:'author'}; renderOverlay(); break;
@@ -3026,6 +3191,13 @@ function onKeydown(e){
     if(runtime.modal) closeModal();
     else if(runtime.popover){ runtime.popover=null; renderMasthead(); }
     return;
+  }
+  /* Bold and italic where the hands already are. Only while the poem field
+     has focus, so the shortcuts never fight the browser elsewhere. */
+  if((e.metaKey||e.ctrlKey) && e.target && e.target.id==='ed-body'){
+    var k=e.key.toLowerCase();
+    if(k==='b'){ e.preventDefault(); applyFmt('**'); return; }
+    if(k==='i'){ e.preventDefault(); applyFmt('*');  return; }
   }
   onPinKeydown(e);
 }
@@ -3388,6 +3560,12 @@ function boot(){
   document.addEventListener('change',onChange);
   document.addEventListener('input',onInput);
   document.addEventListener('keydown',onKeydown);
+  /* A formatting button must never take focus from the poem. Otherwise the
+     caret is lost the moment you press Bold, and the next keystroke — or the
+     next button — has nothing to act on. */
+  document.addEventListener('mousedown',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('.fmt-btn')) e.preventDefault();
+  });
   document.addEventListener('pointerdown',pickerPointerDown);
   document.addEventListener('pointerover',pickerPointerOver);
   document.addEventListener('pointerup',pickerPointerUp);

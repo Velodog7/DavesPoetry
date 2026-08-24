@@ -143,6 +143,41 @@ async function run() {
   r = await call('POST', '/import', backup, authed);
   check('imports a backup', r.status === 200 && r.data.imported === backup.poems.length);
 
+  console.log('\ninline formatting');
+  const eng = require('./lib/poetry-engine');
+  check('markers are stripped from the words',
+    eng.stripMarks('a **loud** and *quiet* ~~cut~~ line') === 'a loud and quiet cut line');
+  check('a lone asterisk is left alone',
+    eng.stripMarks('a lone * star') === 'a lone * star');
+  check('a backslash escapes a marker',
+    eng.stripMarks('an escaped \\* marker') === 'an escaped * marker');
+  check('an unclosed marker stays literal',
+    eng.stripMarks('an **unclosed run') === 'an **unclosed run');
+
+  /* The invariant the whole design rests on: styling a word must not move it. */
+  const plainW = eng.poemWords('the quick brown fox').map(w => w.i + ':' + w.s).join(' ');
+  const styledW = eng.poemWords('the **quick** *brown* fox').map(w => w.i + ':' + w.s).join(' ');
+  check('word positions do not move when a word is styled', plainW === styledW,
+    `${plainW} vs ${styledW}`);
+
+  r = await call('POST', '/poems', {
+    title: 'A Styled Poem',
+    body: 'the **loud** bell\nrang for the ~~lost~~ hour'
+  }, authed);
+  const styledId = r.data && r.data.id;
+  check('a styled poem is accepted', r.status === 201);
+  check('the analysis counts words, not markers', r.data.wordCount === 8, 'count ' + r.data.wordCount);
+
+  r = await call('PUT', '/poems/' + styledId + '/highlights', { words: ['loud'] }, authed);
+  check('highlights find a word through its markup', r.status === 200 && r.data.count === 1);
+  r = await call('GET', '/poems/' + styledId);
+  check('and resolve back to the bare word', r.data.highlightedWords.join(',') === 'loud');
+
+  r = await call('GET', '/poems?search=loud');
+  check('search matches the plain spelling', r.status === 200 && r.data.total === 1);
+
+  await call('DELETE', '/poems/' + styledId, null, authed);
+
   console.log('\nclose readings');
   const readings = require('./lib/readings');
   check('readings ship with the deploy', readings.count() >= 23, `count ${readings.count()}`);
