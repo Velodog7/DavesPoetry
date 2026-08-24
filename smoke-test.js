@@ -143,6 +143,49 @@ async function run() {
   r = await call('POST', '/import', backup, authed);
   check('imports a backup', r.status === 200 && r.data.imported === backup.poems.length);
 
+  console.log('\nclose readings');
+  const readings = require('./lib/readings');
+  check('readings ship with the deploy', readings.count() >= 23, `count ${readings.count()}`);
+
+  /* A reading is written against one draft. Import that exact draft and the
+     reading attaches clean; change a word and it must say so rather than
+     quietly describing lines that no longer exist. */
+  const REAL_ID = 'p_c1c07161cb8a915b';                 /* Ode to an Ammonite */
+  const REAL_BODY = 'You lived.\nYou swam.\nYou were buoyant.\nYou were rapacious.\n' +
+    'Fern-like suture lines\ndivide your coiled chambers:\nyour various snakestone homes.\n' +
+    'You and yours withstood eons:\nThree hundred and sixty million years.\n' +
+    'Witness to the Devonian, \nyou slipped through the needle-eye of the Permian’s end— \n' +
+    'survivor of the Great Dying— \nto claim the Triassic and Jurassic seas, \n' +
+    'until the Cretaceous fire turned your ink to stone.\nYou and yours perished, extinct:\n' +
+    'your remains interred in limestone.\nYour form, curled and helical,\n' +
+    'like the ram’s horn of Ammon,\nendures, circling \nagainst time.\n';
+
+  await call('POST', '/import?merge=true',
+    { poems: [{ id: REAL_ID, title: 'Ode to an Ammonite', body: REAL_BODY }] }, authed);
+
+  r = await call('GET', '/poems/' + REAL_ID);
+  check('a poem carries its own written reading', r.status === 200 && !!r.data.reading);
+  check('the reading is about this poem, not a template',
+    r.data.reading && /ammonite|ink to stone/i.test(JSON.stringify(r.data.reading)));
+  check('the reading is not marked stale for the draft it was written against',
+    r.data.reading && r.data.reading.stale === false,
+    r.data.reading && JSON.stringify(r.data.reading.stale));
+  check('it carries craft notes with quoted evidence',
+    r.data.reading && r.data.reading.craft.length >= 3 &&
+    r.data.reading.craft.every(c => c.move && c.line && c.why));
+
+  await call('PATCH', '/poems/' + REAL_ID, { body: REAL_BODY + '\nA new line he added later.' }, authed);
+  r = await call('GET', '/poems/' + REAL_ID);
+  check('editing the poem marks its reading stale', r.data.reading && r.data.reading.stale === true);
+
+  r = await call('GET', '/poems/' + id);
+  check('a poem with no reading says null rather than inventing one', r.data.reading === null);
+
+  r = await call('GET', '/poems/' + REAL_ID + '/analysis');
+  check('the analysis endpoint carries it too', r.status === 200 && !!r.data.reading);
+
+  await call('DELETE', '/poems/' + REAL_ID, null, authed);
+
   /* ------------------------------------------------------ the account --- */
   console.log('\nauthor account');
 
@@ -174,6 +217,10 @@ async function run() {
   check('but keeps one the poet has touched', r.status === 200);
   r = await call('GET', '/poems');
   check('and the list agrees', r.data.poems.every(p => !p.sample));
+  const served = r.data.total;
+  r = await call('GET', '/health');
+  check('health counts what a visitor sees, not the raw store',
+    r.data.poems === served, `health ${r.data.poems} vs served ${served}`);
 
   r = await call('POST', '/auth/setup', { pin: '4913' });
   check('setup refuses without the setup key', r.status === 401);

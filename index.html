@@ -465,6 +465,58 @@
   .notes-masthead h2{ font-family:var(--f-display); font-size:var(--fs-h2); font-weight:600; letter-spacing:-.018em; line-height:1.14; margin-top:8px; }
   .notes-standfirst{ font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:52ch; margin-top:8px; }
 
+  /* --- the written reading ---------------------------------------------
+     Set as an essay rather than a dashboard: one column, generous measure,
+     serif for the prose because it is prose. */
+  .cr{
+    display:grid; grid-template-columns:158px minmax(0,1fr); gap:26px; align-items:start;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
+    padding:30px 28px 28px; margin-bottom:26px; box-shadow:var(--shadow-1);
+  }
+  .cr-label{ position:sticky; top:82px; }
+  .cr-label .label{ display:block; }
+  .cr-body{ max-width:64ch; }
+  @media (max-width: 720px){
+    .cr{ grid-template-columns:1fr; gap:14px; }
+    .cr-label{ position:static; }
+  }
+  .cr-standfirst{
+    font-family:var(--f-serif); font-size:1.16rem; line-height:1.55; color:var(--ink);
+    max-width:56ch; margin-bottom:18px; font-style:italic;
+  }
+  .cr-para{
+    font-family:var(--f-serif); font-size:1.03rem; line-height:1.75; color:var(--ink-2);
+    max-width:62ch; margin-bottom:14px;
+  }
+  .cr-h{
+    font-family:var(--f-ui); font-size:var(--fs-cap); font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-3); margin:26px 0 14px;
+  }
+  .cr-craft{ list-style:none; display:flex; flex-direction:column; gap:20px; counter-reset:cr; }
+  .cr-craft li{ counter-increment:cr; padding-left:34px; position:relative; }
+  .cr-craft li::before{
+    content:counter(cr); position:absolute; left:0; top:1px;
+    width:22px; height:22px; border-radius:50%; background:var(--accent-wash); color:var(--accent);
+    font-family:var(--f-ui); font-size:.74rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cr-move{ display:block; font-family:var(--f-ui); font-size:var(--fs-cap); font-weight:600; color:var(--ink); }
+  .cr-line{
+    display:block; font-family:var(--f-serif); font-size:1.02rem; line-height:1.5;
+    color:var(--ink); border-left:2px solid var(--accent); padding:2px 0 2px 14px;
+    margin:8px 0; white-space:pre-line;
+  }
+  .cr-why{ display:block; font-size:var(--fs-cap); line-height:1.65; color:var(--ink-2); max-width:60ch; }
+  .cr-stale{
+    font-size:var(--fs-cap); line-height:1.55; color:var(--ink); background:var(--accent-wash);
+    border-radius:var(--r-md); padding:10px 14px; margin-bottom:16px;
+  }
+  .cr-empty p{ font-size:var(--fs-read); line-height:1.65; color:var(--ink-2); max-width:58ch; }
+  .notes-divider{
+    font-family:var(--f-ui); font-size:var(--fs-cap); font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-3); margin:0 0 14px;
+  }
+
   .note-sec{
     display:grid; grid-template-columns:158px minmax(0,1fr); gap:26px; align-items:start;
     background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg);
@@ -1443,6 +1495,38 @@ function proseFigures(a){
   return out;
 }
 
+/* The written reading — one essay per poem, composed against a specific draft.
+   Everything below it is arithmetic; this is the part that actually read the
+   thing. When there is none, say so rather than manufacturing filler. */
+function closeReadingHtml(p){
+  var r=p.reading;
+  if(!r){
+    return '<section class="cr cr-empty">'+
+      '<div class="cr-label"><span class="label">Close reading</span></div>'+
+      '<div class="cr-body"><p><b>Not yet read closely.</b> The notes below are counted, '+
+      'not read — they can describe what this poem does, but not what it is doing. '+
+      'Readings are written one poem at a time, by hand.</p></div></section>';
+  }
+  var h='<section class="cr"><div class="cr-label"><span class="label">Close reading</span></div>'+
+        '<div class="cr-body">';
+  if(r.stale){
+    h+='<p class="cr-stale">This poem has been revised since the reading below was written, '+
+       'so some of it may now point at lines that have changed.</p>';
+  }
+  h+='<p class="cr-standfirst">'+esc(r.standfirst)+'</p>';
+  (r.paragraphs||[]).forEach(function(para){ h+='<p class="cr-para">'+esc(para)+'</p>'; });
+  if(r.craft&&r.craft.length){
+    h+='<h4 class="cr-h">Three things it does</h4><ol class="cr-craft">';
+    r.craft.forEach(function(c){
+      h+='<li><span class="cr-move">'+esc(c.move)+'</span>'+
+         '<blockquote class="cr-line">'+esc(c.line)+'</blockquote>'+
+         '<span class="cr-why">'+esc(c.why)+'</span></li>';
+    });
+    h+='</ol>';
+  }
+  return h+'</div></section>';
+}
+
 function readingNotesHtml(p){
   var a=analysisFor(p);
   var f=a.form;
@@ -1456,8 +1540,12 @@ function readingNotesHtml(p){
     '<div class="notes-masthead"><div>'+
       '<span class="label label-ai">Reading notes</span>'+
       '<h2>'+esc(p.title)+'</h2>'+
-      '<p class="notes-standfirst">A close reading of the poem\'s form, diction, imagery, sound and syntax — with the lines that show it.</p>'+
+      '<p class="notes-standfirst">'+(p.reading
+        ? 'A reading of this particular poem, and then what the counting can add.'
+        : 'What the counting can tell you about this poem’s form, sound and syntax.')+'</p>'+
     '</div></div>'+
+    closeReadingHtml(p)+
+    '<h3 class="notes-divider">By the numbers</h3>'+
     noteSec('Form','<span style="font-size:1.15rem">'+esc(f.form)+'</span>',f.structure,formBody)+
     noteSec('Diction',a.keys.length?a.keys.length:'0','distinct key words',lexiconHtml(a.keys)+proseDiction(a))+
     noteSec('Imagery',a.fields.reduce(function(s,f){ return s+f.count; },0),'image words',proseImage(a)+fieldBarsHtml(a.fields))+
@@ -1631,6 +1719,7 @@ function poemFromApi(p){
     highlights:Array.isArray(p.highlights)?p.highlights.slice():[],
     likedBy:likedBy,
     comments:(p.comments||[]).map(function(c){ return {id:c.id,name:c.name,text:c.text,ts:c.createdAt}; }),
+    reading:p.reading||null,
     sample:!!p.sample
   };
 }
