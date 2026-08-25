@@ -24,8 +24,37 @@ const TYPES = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.wav': 'audio/wav'
 };
+
+/* Vercel serves static files with range support; the local server has to be
+   taught. Without it an <audio> element can play from the start but cannot be
+   dragged, which is exactly the thing a follow-along needs to survive. */
+function serveRange(req, res, file, size, type) {
+  const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+  if (!m) return null;
+  let start = m[1] === '' ? null : Number(m[1]);
+  let end = m[2] === '' ? null : Number(m[2]);
+  if (start === null && end === null) return null;
+  if (start === null) { start = Math.max(0, size - end); end = size - 1; }
+  if (end === null || end >= size) end = size - 1;
+  if (start > end || start >= size) {
+    res.statusCode = 416;
+    res.setHeader('Content-Range', `bytes */${size}`);
+    res.end();
+    return true;
+  }
+  res.statusCode = 206;
+  res.setHeader('Content-Type', type);
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+  res.setHeader('Content-Length', end - start + 1);
+  fs.createReadStream(file, { start, end }).pipe(res);
+  return true;
+}
 
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
@@ -41,14 +70,19 @@ const server = http.createServer((req, res) => {
     return res.end('Forbidden');
   }
 
-  fs.readFile(file, (err, buf) => {
-    if (err) {
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      return res.end('Not found');
-    }
-    res.setHeader('Content-Type', TYPES[path.extname(file)] || 'application/octet-stream');
-    res.end(buf);
+  const type = TYPES[path.extname(file)] || 'application/octet-stream';
+  fs.stat(file, (statErr, stat) => {
+    if (!statErr && stat.isFile() && serveRange(req, res, file, stat.size, type)) return;
+    fs.readFile(file, (err, buf) => {
+      if (err) {
+        res.statusCode = 404;
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        return res.end('Not found');
+      }
+      res.setHeader('Content-Type', type);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.end(buf);
+    });
   });
 });
 

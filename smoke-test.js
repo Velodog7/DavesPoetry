@@ -221,6 +221,52 @@ async function run() {
 
   await call('DELETE', '/poems/' + REAL_ID, null, authed);
 
+  /* ------------------------------------------------ readings aloud ------ */
+  console.log('\nrecordings');
+  const AUDIO_ID = 'p_8c4dc81c955ff498';                /* Ode to Weeds */
+  const AUDIO_BODY = 'Cutgrass:\nBeside crossties\nand in car parks\nthey paint green stripes \n' +
+    'across white gravel.\nAlways first to arrive,\nthey seek accidents.\n' +
+    'So they have been labeled:\ninvasive, aggressive.\n\nDogtooth:\n' +
+    'On the fringes of the two-lane,\nthey meticulously erode\nthe black mortise of asphalt.\n' +
+    'They hark to these barren places \nunfailingly, binding to them,\nmonogamous.\n\nVetch:\n' +
+    'Intruders into the lawn,\nthat genteel crowd,\nthey soldier above, \n' +
+    'right-angled from Earth,\ntowards the sun,\nwhich draws them only a trace,\n' +
+    'only a scintilla nearer.\n\nIt is enough \nto give them elegant names:\n' +
+    'Leersia, Cynodon, Lathyrus.\n\n';
+
+  check('the recording is on disk where the page will ask for it',
+    fs.existsSync(path.join(__dirname, 'audio', 'ode-to-weeds.mp3')));
+
+  await call('POST', '/import?merge=true',
+    { poems: [{ id: AUDIO_ID, title: 'Ode to Weeds', body: AUDIO_BODY }] }, authed);
+
+  r = await call('GET', '/poems/' + AUDIO_ID);
+  check('a recorded poem is served with its recording',
+    r.status === 200 && !!(r.data.audio && r.data.audio.src), JSON.stringify(r.data.audio));
+  check('with one timing per word',
+    r.data.audio && r.data.audio.words.length === r.data.wordCount,
+    r.data.audio && r.data.audio.words.length + ' vs ' + r.data.wordCount);
+  check('the timings run forwards and stay inside the recording',
+    r.data.audio && r.data.audio.words.every((w, i, all) =>
+      w[0] <= w[1] && w[1] <= r.data.audio.duration + 0.5 && (i === 0 || w[0] >= all[i - 1][0])));
+  check('and it is not marked stale for the draft it was read from',
+    r.data.audio && r.data.audio.stale === false);
+
+  /* The recording is of one draft. Revise the poem and the timings can no
+     longer be trusted to point at the right words, so they are withheld —
+     the audio still plays, it just stops claiming to know where it is. */
+  await call('PATCH', '/poems/' + AUDIO_ID, { body: AUDIO_BODY + '\nA line added after the reading.' }, authed);
+  r = await call('GET', '/poems/' + AUDIO_ID);
+  check('editing the poem marks the recording stale', r.data.audio && r.data.audio.stale === true);
+  check('and withholds the timings rather than misplacing them',
+    r.data.audio && r.data.audio.words.length === 0);
+  check('but still offers the recording', r.data.audio && !!r.data.audio.src);
+
+  r = await call('GET', '/poems/' + id);
+  check('a poem never read aloud says null rather than inventing audio', r.data.audio === null);
+
+  await call('DELETE', '/poems/' + AUDIO_ID, null, authed);
+
   /* ------------------------------------------------------ the account --- */
   console.log('\nauthor account');
 
