@@ -237,15 +237,38 @@ async function run() {
   check('the recording is on disk where the page will ask for it',
     fs.existsSync(path.join(__dirname, 'audio', 'ode-to-weeds.mp3')));
 
+  /* Every shipped recording, not just the one exercised below. The poems live
+     in the store rather than the repo, so this cannot check the timings against
+     their words — it checks everything that can be known from the deploy alone. */
+  const shipped = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'audio.json'), 'utf8'));
+  const entries = Object.entries(shipped);
+  check('recordings ship with the deploy', entries.length >= 11, `${entries.length} entries`);
+  const faults = [];
+  for (const [pid, e] of entries) {
+    const w = e.words || [];
+    if (!fs.existsSync(path.join(__dirname, 'audio', e.file))) faults.push(`${pid}: no ${e.file}`);
+    if (!/^[0-9a-f]{12}$/.test(e.fingerprint || '')) faults.push(`${pid}: no fingerprint`);
+    if (!w.length) faults.push(`${pid}: no timings`);
+    if (w.some(([a, b]) => !(a <= b))) faults.push(`${pid}: a word ends before it starts`);
+    if (w.some(([a], i) => i && a < w[i - 1][0])) faults.push(`${pid}: timings go backwards`);
+    if (w.length && w[w.length - 1][1] > e.duration + 0.5) faults.push(`${pid}: runs past the recording`);
+    if (w.length && !(w[0][0] > 0.5)) faults.push(`${pid}: starts before the spoken title ends`);
+    if (w.length && e.leadIn !== w[0][0]) faults.push(`${pid}: leadIn disagrees with the first word`);
+  }
+  check('every recording is internally consistent', faults.length === 0, faults.join(' | '));
+
   await call('POST', '/import?merge=true',
     { poems: [{ id: AUDIO_ID, title: 'Ode to Weeds', body: AUDIO_BODY }] }, authed);
 
   r = await call('GET', '/poems/' + AUDIO_ID);
   check('a recorded poem is served with its recording',
     r.status === 200 && !!(r.data.audio && r.data.audio.src), JSON.stringify(r.data.audio));
+  /* Against the tokeniser the page will use to lay out the spans, not against
+     the analysis word count — those are two different questions. */
+  const engineWords = require('./lib/poetry-engine').poemWords(AUDIO_BODY).length;
   check('with one timing per word',
-    r.data.audio && r.data.audio.words.length === r.data.wordCount,
-    r.data.audio && r.data.audio.words.length + ' vs ' + r.data.wordCount);
+    r.data.audio && r.data.audio.words.length === engineWords,
+    r.data.audio && r.data.audio.words.length + ' vs ' + engineWords);
   check('the timings run forwards and stay inside the recording',
     r.data.audio && r.data.audio.words.every((w, i, all) =>
       w[0] <= w[1] && w[1] <= r.data.audio.duration + 0.5 && (i === 0 || w[0] >= all[i - 1][0])));

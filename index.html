@@ -1256,8 +1256,11 @@ function poemStyleVars(s){
 
 /* ================= LANGUAGE ANALYSIS ================= */
 function tokenize(text){
-  var m=(stripMarks(text).toLowerCase().match(/[a-z][a-z']*/g))||[];
-  return m.map(function(w){ return w.replace(/^'+|'+$/g,''); }).filter(Boolean);
+  /* The curly apostrophe counts. Without it "yesterday’s" was two words here
+     and one word everywhere else, so the analysis reported a higher count than
+     the poem actually has. */
+  var m=(stripMarks(text).toLowerCase().match(/[a-z][a-z'’]*/g))||[];
+  return m.map(function(w){ return w.replace(/^['’]+|['’]+$/g,''); }).filter(Boolean);
 }
 function getLines(body){ return stripMarks(body).split(/\r?\n/).filter(function(l){ return l.trim()!==''; }); }
 function getStanzas(body){
