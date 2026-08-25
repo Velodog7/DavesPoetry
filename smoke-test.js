@@ -251,6 +251,11 @@ async function run() {
       w[0] <= w[1] && w[1] <= r.data.audio.duration + 0.5 && (i === 0 || w[0] >= all[i - 1][0])));
   check('and it is not marked stale for the draft it was read from',
     r.data.audio && r.data.audio.stale === false);
+  /* The reader says the title first. Timings that start at zero mean the poem
+     was aligned over the title and every word will run early. */
+  check('the poem\'s first word waits for the spoken title',
+    r.data.audio && r.data.audio.words[0][0] > 0.5,
+    r.data.audio && 'first word at ' + r.data.audio.words[0][0] + 's');
 
   /* The recording is of one draft. Revise the poem and the timings can no
      longer be trusted to point at the right words, so they are withheld —
