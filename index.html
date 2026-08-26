@@ -708,7 +708,53 @@
   .coll-title{ font-family:var(--f-display); font-size:var(--fs-h1); font-weight:600; line-height:1.06; letter-spacing:-.022em; max-width:16ch; margin-top:8px; }
   .coll-standfirst{ font-size:var(--fs-read); color:var(--ink-2); line-height:1.6; max-width:54ch; margin-top:12px; }
 
-  .coll-figures{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  .coll-figures{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin-bottom:16px; }
+
+  /* --- collection: every poem by length --- */
+  .len-list{ display:flex; flex-direction:column; }
+  .len-row{
+    display:grid; grid-template-columns:minmax(0,1fr) 62px; gap:14px; align-items:center;
+    width:100%; text-align:left; cursor:pointer; padding:9px 10px; border-radius:var(--r-sm);
+    transition:background var(--dur-s) ease;
+  }
+  .len-row:hover{ background:var(--surface-2); }
+  .len-row:focus-visible{ outline:3px solid var(--accent); outline-offset:-2px; }
+  .len-name{ display:block; font-size:var(--fs-cap); color:var(--ink); margin-bottom:5px; }
+  .len-track{ display:block; height:7px; border-radius:999px; background:var(--hairline); overflow:hidden; }
+  .len-fill{ display:block; height:100%; border-radius:999px; background:var(--bar,var(--accent)); opacity:.78; }
+  .len-num{ font-size:var(--fs-micro); color:var(--ink-3); font-variant-numeric:tabular-nums; text-align:right; }
+
+  /* --- collection: superlatives --- */
+  .best-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+  .best{
+    display:flex; flex-direction:column; gap:3px; text-align:left; cursor:pointer;
+    padding:13px 15px; border:1px solid var(--hairline); border-radius:var(--r-md);
+    background:var(--surface); transition:border-color var(--dur-s) ease;
+  }
+  .best:hover{ border-color:var(--accent); }
+  .best:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .best-k{ font-size:var(--fs-micro); letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); font-weight:600; }
+  .best-t{ font-family:var(--f-display); font-size:1.02rem; font-weight:600; line-height:1.25; }
+  .best-v{ font-size:var(--fs-micro); color:var(--ink-3); }
+
+  /* --- collection: poems that share words --- */
+  .kin{ padding:14px 0; border-bottom:1px solid var(--hairline); }
+  .kin:last-child{ border-bottom:none; }
+  .kin-pair{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:7px; }
+  .kin-link{ font-family:var(--f-display); font-size:1.02rem; font-weight:600; color:var(--ink); cursor:pointer; text-align:left; }
+  .kin-link:hover{ color:var(--accent); text-decoration:underline; }
+  .kin-amp{ color:var(--ink-3); font-size:var(--fs-micro); }
+  .kin-words{ display:flex; flex-wrap:wrap; gap:6px; }
+  .kin-w{
+    font-family:var(--f-verse); font-size:.95rem; padding:2px 9px; border-radius:var(--r-pill);
+    background:var(--accent-wash); color:var(--ink-2);
+  }
+  .head-list{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+  .head-chip{
+    font-family:var(--f-verse); font-size:.95rem; padding:3px 11px; border-radius:var(--r-pill);
+    border:1px solid var(--hairline); color:var(--ink-2); background:var(--surface);
+  }
+  @media (prefers-reduced-motion: reduce){ .len-row,.best{ transition:none; } }
   .coll-fig{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg); padding:20px 22px; box-shadow:var(--shadow-1);
     transition:transform var(--dur-m) var(--spring), box-shadow var(--dur-m) var(--ease); }
   .coll-fig:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); }
@@ -2692,6 +2738,112 @@ function trendSvg(data,suffix){
     '<text x="'+(w-pad)+'" y="'+(h-3)+'" text-anchor="end">'+fmtTiny(data[data.length-1].date)+'</text></svg>'+
     '<p class="trend-read">'+cap(dir)+' — from '+first+suffix+' to '+last+suffix+'.</p>';
 }
+/* ---- what the poems have in common, and where they differ ----
+   Everything here reads the poems the page already holds. It is still counting
+   rather than reading, but it counts things worth knowing: which poems share a
+   vocabulary, which words are spent exactly once, and which structural habits
+   recur. Every figure that names a poem links to it — the collection page
+   should be a way in, not a cul-de-sac. */
+
+/* Content words worth comparing between poems: long enough to carry an image,
+   and outside the function-word and low-image lists the engine already keeps. */
+function contentSet(body){
+  var set={};
+  tokenize(body).forEach(function(w){
+    if(w.length>3 && !HARD_STOP[w] && !LIGHT_WORD[w]) set[w]=1;
+  });
+  return set;
+}
+/* Pairs of poems with the most vocabulary in common, by Jaccard overlap so a
+   long poem cannot buy its way to the top simply by using more words. */
+function kinship(A){
+  var bags=A.map(function(x){ return { p:x.p, set:contentSet(x.p.body) }; });
+  var out=[];
+  for(var i=0;i<bags.length;i++){
+    for(var j=i+1;j<bags.length;j++){
+      var shared=[], w;
+      for(w in bags[i].set){ if(bags[j].set[w]) shared.push(w); }
+      if(shared.length<4) continue;
+      var union=Object.keys(bags[i].set).length+Object.keys(bags[j].set).length-shared.length;
+      shared.sort(function(a,b){ return b.length-a.length || a.localeCompare(b); });
+      out.push({ a:bags[i].p, b:bags[j].p, shared:shared, score:shared.length/union });
+    }
+  }
+  out.sort(function(x,y){ return y.score-x.score; });
+  return out.slice(0,4);
+}
+/* Words the collection uses exactly once. In a body of work this size that
+   proportion is a fair measure of how much the writing reaches for a new word
+   rather than a familiar one. */
+function hapax(A){
+  var freq={};
+  A.forEach(function(x){ tokenize(x.p.body).forEach(function(w){ freq[w]=(freq[w]||0)+1; }); });
+  var words=Object.keys(freq), once=0, vivid=[];
+  words.forEach(function(w){
+    if(freq[w]!==1) return;
+    once++;
+    if(w.length>=7 && !HARD_STOP[w] && !LIGHT_WORD[w]) vivid.push(w);
+  });
+  vivid.sort(function(a,b){ return b.length-a.length || a.localeCompare(b); });
+  return { distinct:words.length, once:once, vivid:vivid };
+}
+/* Short title-case lines ending in a colon, dividing a poem into movements.
+   One on the opening line is just how a poem starts; the device is a division,
+   so it takes either several or one that is not the first line to count. */
+function interiorHeadings(A){
+  var found=[], total=0;
+  A.forEach(function(x){
+    var hits=[];
+    getLines(x.p.body).forEach(function(raw,i){
+      var ln=raw.trim();
+      if(!/:$/.test(ln)) return;
+      var w=ln.slice(0,-1).trim().split(/\s+/);
+      if(!w.length || w.length>7) return;
+      var caps=0;
+      w.forEach(function(t){ if(/^[A-Z]/.test(t)) caps++; });
+      if(caps<Math.ceil(w.length/2)) return;
+      hits.push({ text:ln, first:i===0 });
+    });
+    if(hits.length>=2 || (hits.length===1 && !hits[0].first)){
+      found.push({ p:x.p, hits:hits.map(function(h){ return h.text; }) });
+      total+=hits.length;
+    }
+  });
+  return { poems:found, total:total };
+}
+function clockMin(sec){
+  var m=Math.floor(sec/60), s=Math.round(sec%60);
+  if(s===60){ m++; s=0; }
+  return m+':'+(s<10?'0':'')+s;
+}
+var COLL_BEST=[
+  { key:'Longest',           unit:' words',        dir:-1, get:function(x){ return x.a.wordCount; } },
+  { key:'Shortest',          unit:' words',        dir: 1, get:function(x){ return x.a.wordCount; } },
+  { key:'Widest vocabulary', unit:'% of its words used once', dir:-1, get:function(x){ return Math.round(x.a.richness*100); } },
+  { key:'Most rhymed',       unit:'% of line endings',    dir:-1, get:function(x){ return Math.round(x.a.form.rhymeDensity*100); } },
+  { key:'Densest imagery',   unit:'% image words', dir:-1, get:function(x){
+      var t=0; x.a.fields.forEach(function(f){ t+=f.count; });
+      return x.a.wordCount?Math.round((t/x.a.wordCount)*100):0; } },
+  { key:'Longest reading',   unit:'',              dir:-1, fmt:clockMin, get:function(x){
+      return (x.p.audio&&x.p.audio.duration)||0; } }
+];
+function bestHtml(A){
+  return COLL_BEST.map(function(m){
+    var win=null, wv=null;
+    A.forEach(function(x){
+      var v=m.get(x);
+      if(!v) return;
+      if(win===null || (m.dir<0 ? v>wv : v<wv)){ win=x; wv=v; }
+    });
+    if(!win) return '';
+    var shown=(m.fmt?m.fmt(wv):wv)+m.unit;
+    return '<button type="button" class="best" data-action="open-poem" data-id="'+win.p.id+'">'+
+      '<span class="best-k">'+esc(m.key)+'</span>'+
+      '<span class="best-t">'+esc(win.p.title)+'</span>'+
+      '<span class="best-v">'+esc(shown)+'</span></button>';
+  }).join('');
+}
+
 function renderCollection(){
   var main=document.getElementById('main-view');
   var poems=state.poems.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
@@ -2700,7 +2852,8 @@ function renderCollection(){
     return;
   }
   var A=poems.map(function(p){ return {p:p,a:analysisFor(p)}; });
-  var totalWords=0; A.forEach(function(x){ totalWords+=x.a.wordCount; });
+  var totalWords=0, maxWords=0;
+  A.forEach(function(x){ totalWords+=x.a.wordCount; if(x.a.wordCount>maxWords) maxWords=x.a.wordCount; });
 
   /* collection lexicon — distinctive key words weighted across poems */
   var agg={};
@@ -2743,29 +2896,57 @@ function renderCollection(){
   });
   var rhymeTrend=A.map(function(x){ return {date:x.p.date,label:x.p.title,value:Math.round(x.a.form.rhymeDensity*100)}; });
 
+  var kin=kinship(A), hap=hapax(A), heads=interiorHeadings(A);
+  var recorded=A.filter(function(x){ return x.p.audio&&x.p.audio.src; });
+  var listenSecs=0;
+  recorded.forEach(function(x){ listenSecs+=x.p.audio.duration||0; });
+  var readCount=A.filter(function(x){ return x.p.reading&&x.p.reading.paragraphs&&x.p.reading.paragraphs.length; }).length;
+
+  /* Dates only mean something if they spread. These all arrived on the same
+     couple of days, so a chart against time would be plotting the upload, not
+     the writing — and a line drawn through noise still looks like a finding. */
+  var dayMs=86400000;
+  var spanDays=Math.round((new Date(poems[poems.length-1].date+'T00:00:00')-new Date(poems[0].date+'T00:00:00'))/dayMs);
+  var distinctDates={};
+  poems.forEach(function(p){ distinctDates[p.date]=1; });
+  var datesSpread=spanDays>=21 && Object.keys(distinctDates).length>=4;
+
   var dominantForm=formRows[0][0];
   var formShare=Math.round((formRows[0][1]/poems.length)*100);
   var takesArticle=['Ode','Elegy','Sonnet','Ballad','Haiku','Tanka','Villanelle','Limerick','Lyric','Catalogue'].indexOf(dominantForm)>=0;
   var domPhrase=(takesArticle?'the ':'')+dominantForm.toLowerCase();
-  var openingObs='<p>Across '+poems.length+' poems written between '+fmtShort(poems[0].date)+' and '+fmtShort(poems[poems.length-1].date)+
-    ', the work returns most often to <b>'+esc(domPhrase)+'</b> — '+formRows[0][1]+' of '+poems.length+' poems, or '+formShare+'%.</p>';
+  var openingObs='<p>'+poems.length+' poems, '+totalWords.toLocaleString()+' words. The work returns most often to <b>'+
+    esc(domPhrase)+'</b> — '+formRows[0][1]+' of '+poems.length+' poems, or '+formShare+'%.</p>';
+  openingObs+='<p>'+(datesSpread
+    ? 'They carry dates from '+esc(fmtShort(poems[0].date))+' to '+esc(fmtShort(poems[poems.length-1].date))+
+      ', so the trends further down are worth reading as a change over time.'
+    : 'Their dates fall within '+(spanDays===0?'a single day':spanDays+' day'+(spanDays===1?'':'s'))+
+      ' of each other — they were added to the site together rather than written that week, so nothing here is arranged as a progression.')+'</p>';
   if(formRows.length>1) openingObs+='<p>Alongside it sit '+listJoin(formRows.slice(1,4).map(function(r){ return formCountPhrase(r[0],r[1]); }))+'.</p>';
   if(fieldRank.length) openingObs+='<p>Its imagination is grounded in <b>'+esc(fieldRank[0].name.toLowerCase())+'</b>'+
     (fieldRank[1]?' and <b>'+esc(fieldRank[1].name.toLowerCase())+'</b>':'')+
     ', and the words that travel furthest between poems are '+listJoin(lexicon.slice(0,3).map(function(l){ return '<em>'+esc(l.word)+'</em>'; }))+'.</p>';
+  if(recorded.length||readCount) openingObs+='<p>'+
+    (recorded.length?'<b>'+recorded.length+' of '+poems.length+'</b> can be heard read aloud — '+
+      Math.round(listenSecs/60)+' minutes in all, with the words underlined as they are spoken':'')+
+    (recorded.length&&readCount?', and ':'')+
+    (readCount?'<b>'+readCount+'</b> carr'+(readCount===1?'ies':'y')+' a close reading written by hand rather than counted':'')+'.</p>';
 
   main.innerHTML=
     '<div class="view">'+
       '<div class="coll-head">'+
         '<span class="label label-ai">The Collection</span>'+
         '<h1 class="coll-title">Reading the whole body of work</h1>'+
-        '<p class="coll-standfirst">What the poems share when you set them side by side — the forms returned to, the words that travel between them, and how the writing has shifted over time.</p>'+
+        '<p class="coll-standfirst">What the poems share when you set them side by side — the forms returned to, the words that travel between them, '+
+          (datesSpread?'and how the writing has shifted over time.':'and which of them are nearest of kin.')+'</p>'+
       '</div>'+
       '<div class="coll-figures">'+
         '<div class="coll-fig"><span class="n">'+pad2(poems.length)+'</span><span class="label">poems</span></div>'+
-        '<div class="coll-fig"><span class="n">'+Object.keys(vocab).length+'</span><span class="label">distinct words</span></div>'+
-        '<div class="coll-fig"><span class="n">'+formRows.length+'</span><span class="label">forms used</span></div>'+
+        '<div class="coll-fig"><span class="n">'+totalWords.toLocaleString()+'</span><span class="label">words written</span></div>'+
+        '<div class="coll-fig"><span class="n">'+Object.keys(vocab).length.toLocaleString()+'</span><span class="label">distinct words</span></div>'+
         '<div class="coll-fig"><span class="n">'+Math.round(totalWords/poems.length)+'</span><span class="label">words per poem</span></div>'+
+        '<div class="coll-fig"><span class="n">'+formRows.length+'</span><span class="label">forms used</span></div>'+
+        (recorded.length?'<div class="coll-fig"><span class="n">'+Math.round(listenSecs/60)+'</span><span class="label">minutes read aloud</span></div>':'')+
       '</div>'+
 
       '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Observations</span></div>'+
@@ -2777,6 +2958,24 @@ function renderCollection(){
           return '<div class="form-row"><span class="fname">'+esc(r[0])+'</span>'+
             '<span class="ftrack"><span class="ffill" style="width:'+Math.round((r[1]/formMax)*100)+'%"></span></span>'+
             '<span class="fcount">'+r[1]+'</span></div>';
+        }).join('')+
+        '</div></div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Ends of the range</span></div>'+
+        '<div class="coll-sec-body"><p style="margin-bottom:16px">The poems that sit furthest out on each measure. Open any of them.</p>'+
+        '<div class="best-list">'+bestHtml(A)+'</div></div></section>'+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">By length</span>'+
+        '<div class="note-figure">'+Math.round(totalWords/poems.length)+'<span class="note-figure-unit">words on average</span></div></div>'+
+        '<div class="coll-sec-body"><p style="margin-bottom:14px">Every poem, longest first — bar colour follows its form.</p>'+
+        '<div class="len-list">'+
+        A.slice().sort(function(x,y){ return y.a.wordCount-x.a.wordCount; }).map(function(x){
+          var pct=Math.round((x.a.wordCount/maxWords)*100);
+          return '<button type="button" class="len-row" data-action="open-poem" data-id="'+x.p.id+'"'+
+            ' style="--bar:'+formColor(x.a.form.form)+'">'+
+            '<span><span class="len-name">'+esc(x.p.title)+'</span>'+
+            '<span class="len-track"><span class="len-fill" style="width:'+Math.max(pct,2)+'%"></span></span></span>'+
+            '<span class="len-num">'+x.a.wordCount+'</span></button>';
         }).join('')+
         '</div></div></section>'+
 
@@ -2792,15 +2991,53 @@ function renderCollection(){
       '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Imagery</span></div>'+
         '<div class="coll-sec-body">'+fieldBarsHtml(fieldRank.map(function(f){ return {name:f.name,count:f.count}; }))+'</div></section>'+
 
-      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Over time</span></div>'+
+      (kin.length?'<section class="coll-sec"><div class="coll-sec-label"><span class="label">Nearest of kin</span></div>'+
+        '<div class="coll-sec-body"><p style="margin-bottom:12px">Pairs of poems holding the most vocabulary in common, measured as a share of everything either one uses — so a long poem cannot buy its way onto this list.</p>'+
+        kin.map(function(k){
+          return '<div class="kin"><div class="kin-pair">'+
+            '<button type="button" class="kin-link" data-action="open-poem" data-id="'+k.a.id+'">'+esc(k.a.title)+'</button>'+
+            '<span class="kin-amp">and</span>'+
+            '<button type="button" class="kin-link" data-action="open-poem" data-id="'+k.b.id+'">'+esc(k.b.title)+'</button>'+
+            '</div><div class="kin-words">'+
+            k.shared.slice(0,8).map(function(w){ return '<span class="kin-w">'+esc(w)+'</span>'; }).join('')+
+            (k.shared.length>8?'<span class="kin-amp">and '+(k.shared.length-8)+' more</span>':'')+
+            '</div></div>';
+        }).join('')+'</div></section>':'')+
+
+      (heads.poems.length>=2?'<section class="coll-sec"><div class="coll-sec-label"><span class="label">A habit of the house</span>'+
+        '<div class="note-figure">'+heads.poems.length+'<span class="note-figure-unit">poems</span></div></div>'+
+        '<div class="coll-sec-body"><p>'+heads.total+' short title-case lines ending in a colon divide '+
+        heads.poems.length+' of these poems into movements — a device the collection returns to often '+
+        'enough to count as a signature. What it is used to announce varies:</p>'+
+        '<div class="head-list">'+
+        (function(){
+          var seen={}, out=[];
+          heads.poems.forEach(function(h){
+            h.hits.forEach(function(t){ if(!seen[t]){ seen[t]=1; out.push(t); } });
+          });
+          return out.slice(0,12).map(function(t){ return '<span class="head-chip">'+esc(t)+'</span>'; }).join('');
+        })()+
+        '</div></div></section>':'')+
+
+      '<section class="coll-sec"><div class="coll-sec-label"><span class="label">Spent once</span>'+
+        '<div class="note-figure">'+Math.round((hap.once/hap.distinct)*100)+'<span class="note-figure-unit">% of the vocabulary</span></div></div>'+
+        '<div class="coll-sec-body"><p>Of '+hap.distinct.toLocaleString()+' distinct words, <b>'+hap.once.toLocaleString()+
+        '</b> appear exactly once in the whole collection. A high share means the writing keeps reaching for a new word '+
+        'rather than a familiar one; it is the opposite measure to the lexicon above.</p>'+
+        (hap.vivid.length?'<div class="head-list">'+hap.vivid.slice(0,14).map(function(w){
+          return '<span class="head-chip">'+esc(w)+'</span>'; }).join('')+'</div>':'')+
+        '</div></section>'+
+
+      (datesSpread?'<section class="coll-sec"><div class="coll-sec-label"><span class="label">Over time</span></div>'+
         '<div class="coll-sec-body"><div class="trend-pair">'+
           '<div class="trend"><span class="label">Length</span>'+trendSvg(lenTrend,' words')+'</div>'+
           '<div class="trend"><span class="label">Vocabulary range</span>'+trendSvg(richTrend,'%')+'</div>'+
           '<div class="trend"><span class="label">Density of imagery</span>'+trendSvg(imgTrend,'%')+'</div>'+
           '<div class="trend"><span class="label">Use of rhyme</span>'+trendSvg(rhymeTrend,'%')+'</div>'+
-        '</div></div></section>'+
+        '</div></div></section>':'')+
 
-      '<p class="caveat">Everything here is counted, not judged: word families, line endings, syllables, sound repetitions. With a small number of poems the lines will swing hard — they steady as the collection grows.</p>'+
+      '<p class="caveat">Everything on this page is counted, not judged: word families, line endings, syllables, sound repetitions. It can say which poems share a vocabulary; it cannot say which is the better poem. '+
+      (datesSpread?'':'The dates these poems carry are when they were added to the site, so nothing here is charted against time.')+'</p>'+
     '</div>';
 }
 
