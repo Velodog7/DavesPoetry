@@ -1,7 +1,11 @@
 {
   "site": {
-    "name": "Multitudes of Dave: Selected Poems",
-    "byline": "Collected poems"
+    "name": "Multitudes of Dave",
+    "byline": "Collected poems",
+    "previousNames": [
+      "Multitudes of Dave: Selected Poems",
+      "Dave's Verses"
+    ]
   },
   "poems": []
 }

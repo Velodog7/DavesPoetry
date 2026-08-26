@@ -360,6 +360,22 @@ async function run() {
   check('and from here only he changes it', r.status === 200 && r.data.name === 'What Dave Calls It');
   r = await call('GET', '/site');
   check('his choice sticks, deploy or no deploy', r.data.name === 'What Dave Calls It');
+
+  /* The deploy may still correct a name it wrote itself — the poet never chose
+     it, so renaming it is fixing our own text. It must not touch his. */
+  const oldName = (seeded.site.previousNames || [])[0];
+  check('the deploy remembers what it used to call the site', !!oldName,
+    JSON.stringify(seeded.site.previousNames));
+  if (oldName) {
+    await call('PATCH', '/site', { name: oldName }, session);
+    r = await call('GET', '/site');
+    check('a name the deploy left behind is brought up to date',
+      r.data.name === seeded.site.name, `${r.data.name} (wanted ${seeded.site.name})`);
+    await call('PATCH', '/site', { name: 'What Dave Calls It' }, session);
+    r = await call('GET', '/site');
+    check('but a name he chose himself is still left alone',
+      r.data.name === 'What Dave Calls It', r.data.name);
+  }
   await call('PATCH', '/site', { name: seeded.site.name }, session);
 
   r = await call('GET', '/auth');

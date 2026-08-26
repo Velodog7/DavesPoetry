@@ -1,4 +1,4 @@
-<title>Multitudes of Dave: Selected Poems</title>
+<title>Multitudes of Dave</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -351,6 +351,62 @@
   .back-link:hover{ background:var(--accent-wash); }
   .back-link:active{ transform:scale(.95); }
   .back-link svg{ width:16px; height:16px; }
+
+  /* --- moving between poems --- */
+  .reader-top{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap;
+  }
+  .reader-top .back-link{ margin:22px 0 20px; }
+  .reader-step{ display:flex; align-items:center; gap:8px; }
+  .reader-count{
+    font-size:var(--fs-micro); color:var(--ink-3); font-variant-numeric:tabular-nums;
+    letter-spacing:.03em; margin-right:2px;
+  }
+  .step-btn{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    width:34px; height:34px; border-radius:999px;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink-2);
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background var(--dur-s) ease, color var(--dur-s) ease, transform var(--dur-s) var(--spring);
+  }
+  .step-btn svg{ width:16px; height:16px; }
+  .step-btn:hover:not(:disabled){ background:var(--accent-wash); color:var(--accent); border-color:var(--accent); }
+  .step-btn:active:not(:disabled){ transform:scale(.92); }
+  .step-btn:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .step-btn:disabled{ opacity:.32; cursor:default; }
+
+  .poem-nav{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;
+    margin:34px 0 8px; padding-top:26px; border-top:1px solid var(--hairline);
+  }
+  .nav-card{
+    display:flex; flex-direction:column; gap:5px; cursor:pointer; text-align:left;
+    padding:15px 18px; border:1px solid var(--hairline); border-radius:var(--r-md);
+    background:var(--surface); box-shadow:var(--shadow-1);
+    transition:border-color var(--dur-s) ease, transform var(--dur-s) var(--spring);
+  }
+  .nav-card:hover{ border-color:var(--accent); transform:translateY(-1px); }
+  .nav-card:active{ transform:translateY(0) scale(.995); }
+  .nav-card:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+  .nav-card.is-next{ grid-column:2; text-align:right; align-items:flex-end; }
+  .nav-dir{
+    display:flex; align-items:center; gap:5px;
+    font-size:var(--fs-micro); font-weight:600; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--ink-3);
+  }
+  .nav-dir svg{ width:13px; height:13px; }
+  .nav-title{ font-family:var(--f-display); font-size:var(--fs-read); font-weight:600; line-height:1.25; color:var(--ink); }
+  .nav-sub{ font-size:var(--fs-micro); color:var(--ink-3); }
+  .nav-end{
+    display:flex; align-items:center; padding:15px 2px; color:var(--ink-3);
+    font-size:var(--fs-micro); font-style:italic;
+  }
+  .nav-end.is-next{ grid-column:2; justify-content:flex-end; }
+  @media (prefers-reduced-motion: reduce){
+    .step-btn,.nav-card{ transition:none; }
+    .step-btn:active,.nav-card:hover,.nav-card:active{ transform:none; }
+  }
 
   .poem-head{ margin-bottom:26px; }
   .poem-head-meta{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
@@ -921,6 +977,7 @@ var I_AA='<svg viewBox="0 0 24 24" aria-hidden="true"><text x="1" y="18" font-fa
 var I_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.3M12 19.1v2.3M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.6 12h2.3M19.1 12h2.3M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>';
 var I_LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10.5" width="14" height="9.5" rx="1"/><path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1"/></svg>';
 var I_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 18.5L8 12l6.5-6.5"/></svg>';
+var I_FWD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg>';
 var HEART_D='M12 20.6c-.3 0-.6-.1-.8-.3C7 16.9 2.6 13.2 2.6 9.1 2.6 6.3 4.7 4.2 7.3 4.2c1.9 0 3.5 1.1 4.7 2.7 1.2-1.6 2.8-2.7 4.7-2.7 2.6 0 4.7 2.1 4.7 4.9 0 4.1-4.4 7.8-8.6 11.2-.2.2-.5.3-.8.3z';
 function heartIcon(filled){
   return '<svg viewBox="0 0 24 24" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="'+HEART_D+'"/></svg>';
@@ -1837,10 +1894,10 @@ function seedPoems(){
 }
 
 /* ================= STATE ================= */
-function defaultState(){ return { site:{name:"Multitudes of Dave: Selected Poems", byline:'Collected poems', pinHash:null}, poems:seedPoems() }; }
+function defaultState(){ return { site:{name:"Multitudes of Dave", byline:'Collected poems', pinHash:null}, poems:seedPoems() }; }
 function normalizeState(s){
   var site=s.site||{};
-  var out={ site:{ name:site.name||"Multitudes of Dave: Selected Poems", byline:site.byline||'Collected poems', pinHash:site.pinHash||null }, poems:[] };
+  var out={ site:{ name:site.name||"Multitudes of Dave", byline:site.byline||'Collected poems', pinHash:site.pinHash||null }, poems:[] };
   (s.poems||[]).forEach(function(p){
     out.poems.push({
       id:p.id||genId(), title:p.title||'Untitled', date:p.date||todayISO(),
@@ -1908,12 +1965,19 @@ function saveToken(t){ try{ t?localStorage.setItem('dv_token',t):localStorage.re
    shows is a guess — and a wrong guess is worse than a slow one: the reader
    watches the name change under them. Remember what the server last said and
    open with that instead. Written only in API mode, so nothing else sees it. */
+/* The key carries a version. Renaming the site would otherwise show returning
+   readers the old name for one paint — served out of their own cache — before
+   the API corrected it, which is the exact flicker this cache exists to
+   prevent. Bumping the number retires every stale copy at once, and with
+   nothing cached the page opens on the name built into this file, which is the
+   new one. Bump it whenever the site is renamed. */
+var SITE_CACHE_KEY='dv_site2';
 function cacheSite(site){
-  try{ localStorage.setItem('dv_site',JSON.stringify({name:site.name,byline:site.byline})); }catch(e){}
+  try{ localStorage.setItem(SITE_CACHE_KEY,JSON.stringify({name:site.name,byline:site.byline})); }catch(e){}
 }
 function applyCachedSite(){
   try{
-    var raw=localStorage.getItem('dv_site'); if(!raw) return;
+    var raw=localStorage.getItem(SITE_CACHE_KEY); if(!raw) return;
     var s=JSON.parse(raw);
     if(s&&s.name){ state.site.name=s.name; state.site.byline=s.byline||''; }
   }catch(e){}
@@ -2058,7 +2122,7 @@ async function apiPersist(op){
 var STATIC_HEAD=(function(){
   var out='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
   var t=document.querySelector('title');
-  out+='<title>'+((t&&t.textContent)||"Multitudes of Dave: Selected Poems")+'</title>';
+  out+='<title>'+((t&&t.textContent)||"Multitudes of Dave")+'</title>';
   var links=document.querySelectorAll('link[rel="stylesheet"],link[rel="preconnect"]');
   for(var i=0;i<links.length;i++) out+=links[i].outerHTML;
   var css=document.getElementById('app-styles');
@@ -2465,6 +2529,53 @@ function setFollow(on){
   tickAudio();
 }
 
+/* ================= MOVING BETWEEN POEMS =================
+   The neighbours come from the list the reader is actually looking at — same
+   search, same tags, same sort — so "next" means next in the order they chose
+   rather than next in some hidden canonical one. If the poem is not in that
+   list (they opened it, then narrowed the filters behind it), fall back to the
+   whole collection newest-first rather than stranding them with no way on. */
+function poemNeighbours(p){
+  function indexOf(list){
+    for(var i=0;i<list.length;i++){ if(list[i].id===p.id) return i; }
+    return -1;
+  }
+  var list=filteredPoems(), i=indexOf(list), filtered=true;
+  if(i<0){
+    list=state.poems.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    i=indexOf(list); filtered=false;
+  }
+  return {
+    prev: i>0 ? list[i-1] : null,
+    next: (i>=0 && i<list.length-1) ? list[i+1] : null,
+    at: i, total: list.length, filtered: filtered
+  };
+}
+function stepBtnHtml(poem,dir){
+  var label=(dir==='prev'?'Previous poem':'Next poem');
+  if(!poem){
+    return '<button type="button" class="step-btn" disabled aria-label="'+
+      esc(label)+' (none)">'+(dir==='prev'?I_BACK:I_FWD)+'</button>';
+  }
+  return '<button type="button" class="step-btn" data-action="open-poem" data-id="'+poem.id+'"'+
+    ' title="'+esc(label)+': '+esc(poem.title)+'"'+
+    ' aria-label="'+esc(label)+': '+esc(poem.title)+'">'+
+    (dir==='prev'?I_BACK:I_FWD)+'</button>';
+}
+function navCardHtml(poem,dir){
+  var next=(dir==='next');
+  if(!poem){
+    return '<div class="nav-end'+(next?' is-next':'')+'">'+
+      (next?'The last of them':'The first of them')+'</div>';
+  }
+  return '<button type="button" class="nav-card'+(next?' is-next':'')+
+    '" data-action="open-poem" data-id="'+poem.id+'">'+
+    '<span class="nav-dir">'+(next?'':I_BACK)+(next?'Next':'Previous')+(next?I_FWD:'')+'</span>'+
+    '<span class="nav-title">'+esc(poem.title)+'</span>'+
+    '<span class="nav-sub">'+esc(formOf(poem))+' · '+fmtDate(poem.date)+'</span>'+
+  '</button>';
+}
+
 /* ================= READER ================= */
 function renderReader(){
   var p=poemById(runtime.poemId);
@@ -2476,6 +2587,7 @@ function renderReader(){
   var hlOn=runtime.highlightOn===p.id;
   /* Only pay for the per-word spans when there is a recording to follow. */
   var canFollow=!!(p.audio&&p.audio.words&&p.audio.words.length);
+  var nb=poemNeighbours(p);
 
   var comments=p.comments.length ? '<div class="comment-list">'+p.comments.slice().reverse().map(function(c){
     var initial=esc((c.name||'?').trim().charAt(0).toUpperCase()||'?');
@@ -2488,7 +2600,14 @@ function renderReader(){
   }).join('')+'</div>' : '<p class="comments-empty">No comments yet — be the first.</p>';
 
   document.getElementById('main-view').innerHTML=
-    '<div class="view"><button type="button" class="back-link" data-action="go-view" data-view="library">'+I_BACK+'All poems</button>'+
+    '<div class="view">'+
+    '<div class="reader-top">'+
+      '<button type="button" class="back-link" data-action="go-view" data-view="library">'+I_BACK+'All poems</button>'+
+      '<div class="reader-step">'+
+        (nb.at>=0?'<span class="reader-count">'+(nb.at+1)+' of '+nb.total+'</span>':'')+
+        stepBtnHtml(nb.prev,'prev')+stepBtnHtml(nb.next,'next')+
+      '</div>'+
+    '</div>'+
     '<article class="spread">'+
       '<header class="poem-head" style="--dot:'+formColor(f.form)+'">'+
         '<div class="poem-head-meta">'+
@@ -2540,6 +2659,9 @@ function renderReader(){
         comments+
       '</section>'+
       (showNotes?readingNotesHtml(p):'')+
+      '<nav class="poem-nav" aria-label="Move between poems">'+
+        navCardHtml(nb.prev,'prev')+navCardHtml(nb.next,'next')+
+      '</nav>'+
     '</article></div>';
 
   mountAudio(p);
@@ -3315,7 +3437,7 @@ function submitAuthor(e){
 function submitAuthorSettings(e){
   e.preventDefault();
   var fd=new FormData(e.target);
-  state.site.name=(fd.get('name')||"Multitudes of Dave: Selected Poems").trim();
+  state.site.name=(fd.get('name')||"Multitudes of Dave").trim();
   state.site.byline=(fd.get('byline')||'').trim();
   runtime.modal=null;
   if(backend.mode==='api') cacheSite(state.site);
@@ -3481,6 +3603,19 @@ function onKeydown(e){
     var k=e.key.toLowerCase();
     if(k==='b'){ e.preventDefault(); applyFmt('**'); return; }
     if(k==='i'){ e.preventDefault(); applyFmt('*');  return; }
+  }
+  /* Arrow keys turn the page — but only while reading a poem, and never while
+     something is typed into, scrubbed or dialogued over. The audio scrubber is
+     an input, so it keeps its own arrow keys without a special case. */
+  if((e.key==='ArrowLeft'||e.key==='ArrowRight') &&
+     runtime.view==='reader' && !runtime.modal && !runtime.popover &&
+     !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey){
+    var t=e.target, tag=(t&&t.tagName)||'';
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(t&&t.isContentEditable)) return;
+    var p=poemById(runtime.poemId); if(!p) return;
+    var go=poemNeighbours(p)[e.key==='ArrowLeft'?'prev':'next'];
+    if(go){ e.preventDefault(); openPoem(go.id); }
+    return;
   }
   onPinKeydown(e);
 }
