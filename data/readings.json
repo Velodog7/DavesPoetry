@@ -619,5 +619,59 @@
         "why": "From physical sensation to existential dread to one specific person’s hand. The narrowing focus is what makes the abstraction land emotionally."
       }
     ]
+  },
+  "p_dabc4ef011afeb17": {
+    "title": "Ode to a Ribosome",
+    "fingerprint": "5738f60b62e9",
+    "standfirst": "The poem finds its metaphor already sitting inside the biology, then refuses to be reverent about it.",
+    "paragraphs": [
+      "Most poems about the cell reach for machinery. This one reaches for reading, and it is right to: translation is what a ribosome actually does, and the science borrowed the word from us in the first place. So the vocabulary can stay literary throughout without ever straining — ‘a drift of alphabet’, ‘translate its coded tongue’, ‘the weighty poetry of flesh’. The best of these is the least decorated. ‘Three letters at a pass’ is simply the codon, three bases read at a time, stated as though everyone knew. The poem never explains itself, which is why it never sounds like a lesson.",
+      "The middle stanza spills a catalogue — ‘the iron-binders, the bone-carvers, / the tiny architects of thought’ — proteins named by what they build rather than what they are. Then the turn that gives the poem its shape: these builders ‘do not know their maker / is a pair of tangled strands / adrift in a warm and trembling sea.’ It is a creation story with the theology inverted. The makers are ignorant of their origin, and their origin is not a mind.",
+      "The last stanza is four refusals and a descent. ‘You do not pray. / You do not pause to wonder why’ — and then the lines get shorter as the claim gets larger, which is the opposite of how a poem usually swells at the end. Small, blind, bored, and then ‘it builds a god.’ The line can be read two ways at once: the mindless process assembles the mind, and the mind then goes looking for something to worship. The poem leaves both open and stops."
+    ],
+    "craft": [
+      {
+        "move": "A fact used as an image, not as information",
+        "line": "a pair of hands, unequal, cupped",
+        "why": "A ribosome is two subunits of unequal size that close around the messenger strand. The poem renders that anatomy as a gesture of waiting and never once pauses to tell you it is being accurate."
+      },
+      {
+        "move": "Sound doing the mechanism",
+        "line": "A click. A catch. A clank.",
+        "why": "Three hard stops for the three-letter step, walking i–a–a as the machine ratchets forward. You hear the thing work a line before you are told what it makes."
+      },
+      {
+        "move": "The word that breaks its own triplet",
+        "line": "so small, / so blind, / so bored,",
+        "why": "Small and blind are the reverent pair the ending expects. Bored is the one that refuses awe — and it is precisely that refusal that lets ‘it builds a god’ land as an argument rather than a flourish."
+      }
+    ]
+  },
+  "p_edc02d217872cf9b": {
+    "title": "Ode to Threshold",
+    "fingerprint": "63b374cb8dac",
+    "standfirst": "Four stanzas that set out to mock a piece of public art and end up defending it.",
+    "paragraphs": [
+      "The joke is set up in the first line and a half: a wheel that cannot roll, ‘a frozen halo of painted steel and tensioned wire’, guilty of ‘the profound impudence of circles that go nowhere.’ Then the poem goes after the language around the object rather than the object itself. ‘We call you a gateway’ is the civic brochure talking, and the deflation is immediate — no arrangement of steel cable is going to trap a drifting ghost or stop the deer treating a traffic island like their personal parlor. The geography is Ashland’s and the poem trusts it completely: Lithia Park, the Plaza, East Main, Shakespeare in the air, none of it glossed.",
+      "The centre of the poem is a single question, and the poem does something shrewd with it — it gives the only spoken line to the sculpture. Everything else is the speaker describing; the question belongs to the ring, and it is aimed at us. ‘Where exactly do you think you are spinning off to?’ The still thing interrogates the moving town, and the mockery quietly changes direction.",
+      "Then the poem stops being funny, and it manages the change without announcing it. ‘Stationary vortex’ holds both states in two words. The price arrives exactly where the punchline should be and turns into a definition instead. And the lines shorten — ‘a pause / to look through the spokes / at the light on the other side’ — until the title finally means something. A threshold is not a thing you look at. The poem’s last act is to stop looking at the sculpture and start looking through it."
+    ],
+    "craft": [
+      {
+        "move": "Local detail left entirely unglossed",
+        "line": "or keep the deer from Lithia Park",
+        "why": "The poem never explains where it is standing. The park, the Plaza, East Main and the ghost drifting down from a Shakespeare stage do the work, and the deer treating a traffic island as a parlor is a joke only a resident would think to make."
+      },
+      {
+        "move": "Handing the object the only line of speech",
+        "line": "Where exactly do you think you are spinning off to?",
+        "why": "It is the sole question in the poem and the sole thing anyone says aloud. Giving it to the sculpture — addressed to ‘the Prius and the pedestrian alike’ — turns the satire around onto the reader in one move."
+      },
+      {
+        "move": "A price tag that changes sides",
+        "line": "a $100,000 conversational punctuation mark",
+        "why": "The figure lands where you expect the complaint and becomes the description instead. Calling it punctuation concedes that it does nothing, while insisting that doing nothing, placed correctly, is the whole function."
+      }
+    ]
   }
 }
